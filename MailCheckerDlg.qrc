@@ -1,0 +1,16 @@
+<RCC>
+  <qresource prefix="MailChecker">
+    <file>Images/Application.png</file>
+    <file>Images/About.png</file>
+    <file>Images/Account.png</file>
+    <file>Images/AddAccount.png</file>
+    <file>Images/CheckMail.png</file>
+    <file>Images/DelAccount.png</file>
+    <file>Images/DelMail.png</file>
+    <file>Images/Exit.png</file>
+    <file>Images/Mail.png</file>
+    <file>Images/NewMail.png</file>
+    <file>Images/ReadMail.png</file>
+    <file>Images/Settings.png</file>
+  </qresource>
+</RCC>
