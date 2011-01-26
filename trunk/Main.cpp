@@ -1,4 +1,4 @@
-#include "MailCheckerDlg.h"
+#include "TrayIcon.h"
 #include <QtGui/QApplication>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -25,7 +25,8 @@ void createTables()
 			   Host varchar, \
 			   User varchar, \
 			   Password varchar, \
-			   Port int \
+			   Port int, \
+			   SSL bool \
    )");
 }
 
@@ -36,7 +37,6 @@ int main(int argc, char *argv[])
 	createTables();
 
 	QApplication app(argc, argv);
-	MailCheckerDlg wnd;
-	wnd.show();
+	TrayIcon tray;
 	return app.exec();
 }

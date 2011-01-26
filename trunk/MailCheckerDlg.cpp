@@ -12,7 +12,6 @@ MailCheckerDlg::MailCheckerDlg(QWidget *parent, Qt::WFlags flags)
 	: QDialog(parent, flags)
 {
 	ui.setupUi(this);
-	createTray();
 
 	setting = UserSetting::getInstance();
 	loadSettings();
@@ -30,14 +29,15 @@ MailCheckerDlg::MailCheckerDlg(QWidget *parent, Qt::WFlags flags)
 	mapper->addMapping(ui.leUser,     USER);
 	mapper->addMapping(ui.lePassword, PASSWORD);
 	mapper->addMapping(ui.sbPort,     PORT);
+	mapper->addMapping(ui.checkSSL,   SSL);
 	mapper->toFirst();
 
 	ui.listView->setModel(model);
 
 	connect(ui.buttonBoxGeneral, SIGNAL(accepted()), this, SLOT(onOK()));
 	connect(ui.buttonBoxGeneral, SIGNAL(rejected()), this, SLOT(onCancel()));
-	connect(ui.btAdd,     SIGNAL(clicked()),  this, SLOT(onAdd()));
-	connect(ui.btDel,     SIGNAL(clicked()),  this, SLOT(onDel()));
+	connect(ui.btAdd,            SIGNAL(clicked()),  this, SLOT(onAdd()));
+	connect(ui.btDel,            SIGNAL(clicked()),  this, SLOT(onDel()));
 	connect(ui.listView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
 			this, SLOT(onSelectAccount(QModelIndex)));
 	connect(ui.listView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
@@ -45,30 +45,8 @@ MailCheckerDlg::MailCheckerDlg(QWidget *parent, Qt::WFlags flags)
 	connect(ui.cbProtocol, SIGNAL(currentIndexChanged(QString)), this, SLOT(onProtocolChanged(QString)));
 }
 
-MailCheckerDlg::~MailCheckerDlg()
-{
-	trayIcon->hide();
+MailCheckerDlg::~MailCheckerDlg() {
 	model->submitAll();
-}
-
-void MailCheckerDlg::createTray()
-{
-	QMenu* trayMenu = new QMenu(this);
-	trayMenu->addAction(ui.actionCheckAll);
-	trayMenu->addAction(ui.actionOpenEmailApp);
-	trayMenu->addAction(ui.actionSettings);
-	trayMenu->addAction(ui.actionExit);
-
-	trayIcon = new QSystemTrayIcon(this);
-	trayIcon->setIcon(QIcon(":/MailChecker/Images/Mail.png"));
-	trayIcon->setContextMenu(trayMenu);
-	trayIcon->show();
-
-	connect(ui.actionExit,         SIGNAL(triggered()), qApp, SLOT(quit()));
-	connect(ui.actionSettings,     SIGNAL(triggered()), this, SLOT(show()));
-	connect(ui.actionOpenEmailApp, SIGNAL(triggered()), this, SLOT(onOpenApp()));
-	connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
-			this, SLOT(onTrayActivated(QSystemTrayIcon::ActivationReason)));
 }
 
 void MailCheckerDlg::closeEvent(QCloseEvent* event)
@@ -85,7 +63,6 @@ void MailCheckerDlg::onOK()
 {
 	hide();
 
-	setting = UserSetting::getInstance("General");
 	setting->setValue("Interval",         ui.sbInterval->value());
 	setting->setValue("Timeout",          ui.sbTimeout->value());
 	setting->setValue("Popup",            ui.cbPopup->currentText() == tr("Yes"));
@@ -93,6 +70,7 @@ void MailCheckerDlg::onOK()
 	setting->setValue("Application",      ui.cbApplication->currentText());
 	setting->setValue("SoundFiles",       ui.cbSound->getFiles().join(";"));
 	setting->setValue("ApplicationFiles", ui.cbApplication->getFiles().join(";"));
+	setting->setValue("SSL",              ui.checkSSL->isChecked());
 
 	model->submitAll();
 }
@@ -118,6 +96,7 @@ void MailCheckerDlg::loadSettings()
 
 	ui.cbSound      ->setCurrentText(setting->value("Sound").toString());
 	ui.cbApplication->setCurrentText(setting->value("Application").toString());
+	ui.checkSSL     ->setChecked    (setting->value("SSL").toBool());
 }
 
 void MailCheckerDlg::onAdd()
@@ -148,10 +127,4 @@ void MailCheckerDlg::onSelectAccount(const QModelIndex& idx)
 
 void MailCheckerDlg::onProtocolChanged(const QString& protocol) {
 	model->setData(model->index(currentRow, PROTOCOL), protocol);
-}
-
-void MailCheckerDlg::onTrayActivated(QSystemTrayIcon::ActivationReason reason)
-{
-	if(reason == QSystemTrayIcon::DoubleClick)
-		onOpenApp();
 }
