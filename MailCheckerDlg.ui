@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>446</width>
-    <height>332</height>
+    <height>367</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -238,11 +238,6 @@
                 </item>
                 <item>
                  <property name="text">
-                  <string>IMAP SSL</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
                   <string>POP</string>
                  </property>
                 </item>
@@ -306,6 +301,13 @@
                 </property>
                </widget>
               </item>
+              <item row="6" column="0" colspan="2">
+               <widget class="QCheckBox" name="checkSSL">
+                <property name="text">
+                 <string>SSL</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -317,7 +319,7 @@
              <property name="sizeHint" stdset="0">
               <size>
                <width>20</width>
-               <height>40</height>
+               <height>18</height>
               </size>
              </property>
             </spacer>

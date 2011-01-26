@@ -15,4 +15,5 @@ void UserSetting::loadDefaults()
 	setValue("Application", QString());
 	setValue("SoundFiles", QString());
 	setValue("ApplicationFiles", QString());
+	setValue("SSL", true);
 }
