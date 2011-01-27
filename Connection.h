@@ -7,6 +7,7 @@
 
 struct MailInfo
 {
+	int     id;
 	QString subject;
 	QString from;
 	QString date;
@@ -30,38 +31,27 @@ struct AccountInfo
 
 class QTcpSocket;
 
+typedef QList<MailInfo> MailList;
+
 class Connection : public QObject
 {
 	Q_OBJECT
-
-	typedef QList<MailInfo> MailList;
-	typedef enum {
-		DISCONNECTED, 
-		CONNECTED, 
-		LOGGED_IN,
-		FOUND_BOXES,
-		EXAMINE_INBOX,
-		FOUND_UNSEEN,
-		FETCH_UNSEEN,
-		DONE
-	} Status;
 
 public:
 	Connection(QObject *parent);
 
 	void setAccount(const AccountInfo& acc);
 	void setEnableSSL(bool ssl);
-	void check();
+	bool check();
+	MailList getUnseenMails() const;
 
 protected:
-	void sendData(const QString& data);
-
-	void login();
-	void findBoxes();
-	void examineInbox();
-	void searchUnseen();
-	void fetchUnseen();
-	void fetch();
+	bool connect();
+	bool login();
+	bool findBoxes();
+	bool searchUnseen();
+	bool fetchUnseen();
+	bool logout();
 
 	bool parseOK();
 	bool parseConnection();
@@ -69,31 +59,33 @@ protected:
 	bool parseBoxes();
 	bool parseExamine();
 	bool parseUnseen();
-	bool parseHeader();
+	bool parseHeader(MailInfo& info);
+	bool parseLogout();
 	
 	QString findBox(const QString& string, const QString& target) const;
 
-	MailList getUnseenMails() const;
 	void setRead(int id);
 	void delMail(int id);	
 
+	void sendCommand(const QString& command);
+	void readResponse();
 
 protected slots:
 	void onError(QAbstractSocket::SocketError error);
 	void onStateChanged(QAbstractSocket::SocketState state);
-	void onReadSocket();
 
 signals:
 	void connectionError(const QString& msg);
 
 protected:
+	int     timeout;
 	QString inboxName;
 	QString trashBoxName;
 	QSslSocket* socket;
-	QByteArray buffer;
-	Status status;
+	QByteArray response;
 	AccountInfo account;
-	QList<int> unseenMails;
+	QList<int> unseenMailsIDs;
+	MailList   unseenMails;
 };
 
 #endif // CONNECTION_H

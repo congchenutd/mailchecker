@@ -58,7 +58,20 @@ void TrayIcon::onCheckAll()
 		int     port        = query.value(5).toInt();
 		bool    ssl         = query.value(6).toBool();
 
+		connection->setEnableSSL(true);
 		connection->setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
-		connection->check();
+		if(connection->check())
+		{
+			QString message;
+			MailList mails = connection->getUnseenMails();
+			foreach(MailInfo mail, mails)
+				message += mail.from + "\n" + mail.subject + "\n" + mail.date + "\n\n";
+			showMessage(tr("You've got mail!"), message);
+		}
 	}
+}
+
+void TrayIcon::alert()
+{
+
 }

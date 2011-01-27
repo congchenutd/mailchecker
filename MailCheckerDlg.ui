@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -60,12 +60,15 @@
           <item row="1" column="1">
            <widget class="QSpinBox" name="sbTimeout">
             <property name="suffix">
-             <string> min</string>
+             <string> sec</string>
             </property>
             <property name="minimum">
-             <number>1</number>
+             <number>10</number>
             </property>
             <property name="maximum">
+             <number>60</number>
+            </property>
+            <property name="singleStep">
              <number>10</number>
             </property>
            </widget>
@@ -191,7 +194,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="">
+         <widget class="QWidget" name="layoutWidget">
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
             <widget class="QGroupBox" name="groupConfiguration">

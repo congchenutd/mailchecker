@@ -9,7 +9,7 @@ UserSetting::UserSetting(const QString& fileName) : MySetting<UserSetting>(fileN
 void UserSetting::loadDefaults()
 {
 	setValue("Interval", 15);
-	setValue("Timeout", 1);
+	setValue("Timeout", 30);
 	setValue("Popup", true);
 	setValue("Sound", QString());
 	setValue("Application", QString());
