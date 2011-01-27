@@ -13,26 +13,27 @@ void Connection::setEnableSSL(bool ssl)
 	if(socket != 0)
 		socket->deleteLater();
 	socket = new QSslSocket(this);
-	QObject::connect(socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
-					this,   SLOT(onStateChanged(QAbstractSocket::SocketState)));
-	QObject::connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), 
-					 this, SLOT(onError(QAbstractSocket::SocketError)));
+	qDebug() << "\nnew socket";
+	//QObject::connect(socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
+	//				this,   SLOT(onStateChanged(QAbstractSocket::SocketState)));
+	//QObject::connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), 
+	//				 this, SLOT(onError(QAbstractSocket::SocketError)));
 }
 
 void Connection::onError(QAbstractSocket::SocketError error)
 {
-	qDebug() << socket->errorString();
-	emit connectionError(socket->errorString());
+	//qDebug() << "Error: " << socket->errorString();
+	//emit connectionError(socket->errorString());
 }
 
 void Connection::onStateChanged(QAbstractSocket::SocketState state)
 {
-	if(state == QAbstractSocket::UnconnectedState)
-	{
-		qDebug() << "Connection lost";
-		socket->deleteLater();
-		socket = 0;
-	}
+	//if(state == QAbstractSocket::UnconnectedState)
+	//{
+	//	qDebug() << "Connection lost";
+	//	socket->deleteLater();
+	//	socket = 0;
+	//}
 }
 
 bool Connection::check() 
@@ -40,26 +41,38 @@ bool Connection::check()
 	unseenMails.clear();
 	unseenMailsIDs.clear();
 	if(!connect())
-		return false;
+		goto fail;
 	if(!login())
-		return false;
+		goto fail;
 	if(!findBoxes())
-		return false;
+		goto fail;
 	if(!searchUnseen())
-		return false;
+		goto fail;
 	if(!fetchUnseen())
-		return false;
+		goto fail;
 	if(!logout())
-		return false;
-	socket->close();
+		goto fail;
+
+	close();
+	qDebug() << "\nLogout\n";
+	return true;
+
+fail:
+	close();
+	qDebug() << "\nMission failed\n";
+	return false;
+}
+
+void Connection::close()
+{
 	socket->deleteLater();
 	socket = 0;
-	return true;
 }
 
 bool Connection::connect()
 {
 	socket->connectToHostEncrypted(account.host, account.port);
+	qDebug() << "\nConnect to host";
 	readResponse();
 	return parseConnection();
 }
@@ -122,11 +135,10 @@ bool Connection::parseExamine() {
 }
 bool Connection::parseUnseen()
 {
-	if(!parseOK())
-		return false;
-
 	int start = response.indexOf("* SEARCH ") + 9;
-	int end   = response.indexOf(". OK ") - 1;
+	if(start == -1)
+		return false;
+	int end = response.indexOf("\r\n");
 	QString line = response.mid(start, end - start + 1);
 	QStringList ids = line.split(" ");
 	foreach(QString id, ids)
@@ -140,20 +152,23 @@ bool Connection::parseUnseen()
 
 bool Connection::parseHeader(MailInfo& info)
 {
-	if(!parseOK())
-		return false;
-
 	int fromStart = response.indexOf("From: ");
-	int fromEnd   = response.indexOf("\r", fromStart);
-	info.from     = response.mid(fromStart, fromEnd - fromStart + 1);
+	if(fromStart == -1)
+		return false;
+	int fromEnd = response.indexOf("\r", fromStart);
+	info.from = response.mid(fromStart, fromEnd - fromStart + 1);
 
 	int subjectStart = response.indexOf("Subject: ");
-	int subjectEnd   = response.indexOf("\r", subjectStart);
-	info.subject     = response.mid(subjectStart, subjectEnd - subjectStart + 1);
+	if(subjectStart == -1)
+		return false;
+	int subjectEnd = response.indexOf("\r", subjectStart);
+	info.subject = response.mid(subjectStart, subjectEnd - subjectStart + 1);
 
 	int dateStart = response.indexOf("Date: ");
-	int dateEnd   = response.indexOf("\r", dateStart);
-	info.date     = response.mid(dateStart, dateEnd - dateStart + 1);
+	if(dateStart == -1)
+		return false;
+	int dateEnd = response.indexOf("\r", dateStart);
+	info.date = response.mid(dateStart, dateEnd - dateStart + 1);
 
 	return true;
 }
@@ -186,7 +201,7 @@ QString Connection::findBox(const QString& string, const QString& target) const
 
 void Connection::sendCommand(const QString& command)
 {
-	if(socket == 0)
+	if(socket == 0 || !socket->isOpen())
 		return;
 	qint64 bytesWritten = socket->write(command.toUtf8() + "\r\n");
 	if(bytesWritten != command.size() + 2)
@@ -199,14 +214,17 @@ void Connection::sendCommand(const QString& command)
 
 void Connection::readResponse()
 {
-	bool couldRead = socket->waitForReadyRead(timeout) ;
-	if(!couldRead)
+	if(!socket->waitForReadyRead(timeout))
+	{
 		emit connectionError("Could not receive data:");
+		qDebug("Could not receive data:");
+		return;
+	}
 	response = socket->readAll();
+
 	qDebug() << "\n ------------- Response -------------\n" << response;
 }
 
 MailList Connection::getUnseenMails() const {
 	return unseenMails;
 }
-
