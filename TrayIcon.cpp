@@ -1,5 +1,6 @@
 #include "TrayIcon.h"
 #include "MailCheckerDlg.h"
+#include "Setting.h"
 #include "Connection.h"
 #include <QMenu>
 #include <QSqlQuery>
@@ -12,14 +13,17 @@ TrayIcon::TrayIcon(QObject *parent)
 	QMenu* trayMenu = new QMenu;
 
 	actionCheck       = new QAction(tr("Check All"), this);
+	actionTellMeAgain = new QAction(tr("Tell me again"), this);
 	actionApplication = new QAction(tr("Open Mail Client"), this);
 	actionSettings    = new QAction(tr("Settings"), this);
 	actionExit        = new QAction(tr("Exit"), this);
 	actionCheck      ->setIcon(QIcon(":/MailChecker/Images/CheckMail.png"));
+	actionTellMeAgain->setIcon(QIcon(":/MailChecker/Images/TellMeAgain.png"));
 	actionApplication->setIcon(QIcon(":/MailChecker/Images/Application.png"));
 	actionSettings   ->setIcon(QIcon(":/MailChecker/Images/Settings.png"));
 	actionExit       ->setIcon(QIcon(":/MailChecker/Images/Exit.png"));
 	trayMenu->addAction(actionCheck);
+	trayMenu->addAction(actionTellMeAgain);
 	trayMenu->addAction(actionApplication);
 	trayMenu->addAction(actionSettings);
 	trayMenu->addAction(actionExit);
@@ -32,10 +36,13 @@ TrayIcon::TrayIcon(QObject *parent)
 	connect(actionExit,        SIGNAL(triggered()), qApp, SLOT(quit()));
 	connect(actionSettings,    SIGNAL(triggered()), dlg,  SLOT(show()));
 	connect(actionApplication, SIGNAL(triggered()), dlg,  SLOT(onOpenApp()));
+	connect(&timer,            SIGNAL(timeout()),   this, SLOT(onTimeout()));
 	connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
 			this, SLOT(onTrayActivated(QSystemTrayIcon::ActivationReason)));
 
 	connection = new Connection(this);
+	timer.start(UserSetting::getInstance()->value("Interval").toInt() * 60 * 1000);
+	onCheckAll();
 }
 
 void TrayIcon::onTrayActivated(QSystemTrayIcon::ActivationReason reason)
@@ -69,9 +76,15 @@ void TrayIcon::onCheckAll()
 			showMessage(tr("You've got mail!"), message);
 		}
 	}
+	alert();
 }
 
 void TrayIcon::alert()
 {
+	QString soundFile = UserSetting::getInstance()->value("Sound").toString();
+//	if()
+}
 
+void TrayIcon::onTimeout() {
+	onCheckAll();
 }

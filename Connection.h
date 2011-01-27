@@ -52,6 +52,7 @@ protected:
 	bool searchUnseen();
 	bool fetchUnseen();
 	bool logout();
+	void close();
 
 	bool parseOK();
 	bool parseConnection();
