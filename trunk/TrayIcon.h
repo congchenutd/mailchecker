@@ -5,6 +5,7 @@
 
 class MailCheckerDlg;
 class QAction;
+class Connection;
 
 class TrayIcon : public QSystemTrayIcon
 {
@@ -15,6 +16,7 @@ public:
 
 private slots:
 	void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
+	void onCheckAll();
 
 private:
 	MailCheckerDlg* dlg;
@@ -22,6 +24,7 @@ private:
 	QAction* actionApplication;
 	QAction* actionSettings;
 	QAction* actionExit;
+	Connection* connection;
 };
 
 #endif // TRAYICON_H
