@@ -19,6 +19,9 @@ private slots:
 	void onCheckAll();
 
 private:
+	void alert();
+
+private:
 	MailCheckerDlg* dlg;
 	QAction* actionCheck;
 	QAction* actionApplication;
