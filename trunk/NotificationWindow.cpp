@@ -23,7 +23,6 @@ NotificationWindow::NotificationWindow(QWidget *parent)
 	connect(hideGeometryAnimation, SIGNAL(finished()), this, SLOT(close()));
 
 	layout = new QVBoxLayout(this);
-	layout->setSizeConstraint(QLayout::SetMinimumSize);
 	setLayout(layout);
 
 	connect(&hideTimer, SIGNAL(timeout()), this, SLOT(onHide()));
@@ -132,12 +131,8 @@ void NotificationWindow::onDelMail(MailWidget* widget)
 {
 	widgets.removeAt(widgets.indexOf(widget));
 	layout->removeWidget(widget);
-	int lostHeight = widget->height() + layout->spacing();
-	int y = geometry().y() + lostHeight;
-	//move(geometry().x(), y);
-	layout->invalidate();
-	QRect rect = getFinalRect();
-	setGeometry(geometry().x(), y, width(), height()-lostHeight);
+	adjustSize();
+	setGeometry(getFinalRect());
 }
 
 QRect NotificationWindow::getFinalRect() const
