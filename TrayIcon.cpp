@@ -43,7 +43,6 @@ TrayIcon::TrayIcon(QObject *parent)	: QSystemTrayIcon(parent)
 	connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
 			this, SLOT(onTrayActivated(QSystemTrayIcon::ActivationReason)));
 
-	connection = new Connection(this);
 	timer.start(UserSetting::getInstance()->value("Interval").toInt() * 60 * 1000);
 	onCheckAll();
 }
@@ -72,13 +71,26 @@ void TrayIcon::onCheckAll()
 
 		if(enable)
 		{
+			Connection* connection = new Connection(this);
+			connections << connection;
+			connect(connection, SIGNAL(finished()), this, SLOT(onCheckDone()));
+
 			connection->setEnableSSL(ssl);
 			connection->setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
-			if(connection->check())
-				notification->addMailList(connection->getUnseenMails());
+			connection->setMission(Connection::CHECK);
+			connection->start();
 		}
 	}
-	alert();
+}
+
+void TrayIcon::onCheckDone()
+{
+	Connection* connection = qobject_cast<Connection*>(sender());
+	if(connection->missionSuccessful())
+		notification->addMailList(connection->getUnseenMails());
+	connections.remove(connection);
+	if(connections.isEmpty())
+		alert();
 }
 
 void TrayIcon::alert()

@@ -5,6 +5,7 @@
 #include <QTcpSocket>
 #include <QSslSocket>
 #include <QList>
+#include <QThread>
 
 struct MailInfo
 {
@@ -41,13 +42,19 @@ struct AccountInfo
 
 class QTcpSocket;
 
-class Connection : public QObject
+class Connection : public QThread
 {
 	Q_OBJECT
+
 
 public:
 	Connection(QObject* parent = 0);
 
+	typedef enum {CHECK, DELETE, READ} Mission;
+	void run();
+	void setMission(Mission m) { mission = m; }
+	void setTargetID(int id)   { targetID = id; }
+	bool missionSuccessful() const { return successful; }
 	void setAccount(const AccountInfo& acc);
 	void setEnableSSL(bool ssl);
 	bool check();
@@ -62,7 +69,6 @@ protected:
 	bool searchUnseen();
 	bool fetchUnseen();
 	bool logout();
-	void close();
 	bool doSetRead(int id);
 	bool doDelMail(int id);
 
@@ -73,18 +79,10 @@ protected:
 	
 	QString findBox(const QString& string, const QString& target) const;
 
-
 	void sendCommand(const QString& command);
 	void readResponse();
 	bool responseDone();
 	QString elide(const QString& string, int length = 50);
-
-protected slots:
-	void onError(QAbstractSocket::SocketError error);
-	void onStateChanged(QAbstractSocket::SocketState state);
-
-signals:
-	void connectionError(const QString& msg);
 
 protected:
 	int     timeout;
@@ -95,6 +93,9 @@ protected:
 	AccountInfo account;
 	QList<int> unseenMailsIDs;
 	MailList   unseenMails;
+	Mission mission;
+	int targetID;
+	bool successful;
 };
 
 #endif // CONNECTION_H
