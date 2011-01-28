@@ -23,7 +23,7 @@ NotificationWindow::NotificationWindow(QWidget *parent)
 	connect(hideGeometryAnimation, SIGNAL(finished()), this, SLOT(close()));
 
 	layout = new QVBoxLayout(this);
-	layout->setSizeConstraint(QLayout::SetFixedSize);
+	layout->setSizeConstraint(QLayout::SetMinimumSize);
 	setLayout(layout);
 
 	connect(&hideTimer, SIGNAL(timeout()), this, SLOT(onHide()));
@@ -58,20 +58,12 @@ void NotificationWindow::showNofitication()
 	show();
 	setWindowOpacity(1.0);	
 
-	QRect desktopRect = qApp->desktop()->availableGeometry();
-	int w = width();
-	int x = desktopRect.width() - w;
-	int h = height();
-	int y = hideGeometryAnimation->state() == QAbstractAnimation::Running ?
-		geometry().y() : y = desktopRect.height();
-
-	hideGeometryAnimation->stop();
-	hideOpacityAnimation->stop();
-
 	showGeometryAnimation->setDuration(500);
-	showGeometryAnimation->setStartValue(QRect(x, y, w, h));
+	showGeometryAnimation->setStartValue(getStartRect());
 	showGeometryAnimation->setEndValue  (getFinalRect());
 	showGeometryAnimation->start();
+	hideGeometryAnimation->stop();
+	hideOpacityAnimation->stop();
 
 	int seconds = UserSetting::getInstance()->value("ShowNotification").toInt();
 	hideTimer.start(seconds * 1000 + 500);
@@ -89,14 +81,11 @@ bool NotificationWindow::hasNewMail() const {
 
 void NotificationWindow::onHide()
 {
-	QRect desktopRect = qApp->desktop()->availableGeometry();
-	int w = width();
-	int x = desktopRect.width() - w;
-	int h = height();
-	int y = desktopRect.height();
+	hideTimer.stop();
 	hideGeometryAnimation->setDuration(1000);
-	hideGeometryAnimation->setStartValue(QRect(x, y-h,   w, h));
-	hideGeometryAnimation->setEndValue  (QRect(x, y, w, h));
+	QRect rect = getFinalRect();
+	hideGeometryAnimation->setStartValue(getFinalRect());
+	hideGeometryAnimation->setEndValue  (getStartRect());
 	hideGeometryAnimation->start();
 
 	hideOpacityAnimation->setDuration(1000);
@@ -143,12 +132,25 @@ void NotificationWindow::onDelMail(MailWidget* widget)
 {
 	widgets.removeAt(widgets.indexOf(widget));
 	layout->removeWidget(widget);
+	int lostHeight = widget->height() + layout->spacing();
+	int y = geometry().y() + lostHeight;
+	//move(geometry().x(), y);
+	layout->invalidate();
+	QRect rect = getFinalRect();
+	setGeometry(geometry().x(), y, width(), height()-lostHeight);
 }
 
 QRect NotificationWindow::getFinalRect() const
 {
 	QRect desktopRect = qApp->desktop()->availableGeometry();
-	int w = width();
-	int h = height();
-	return QRect(desktopRect.width()-w, desktopRect.height()-h, w, h);
+	return QRect(desktopRect.width()-width(), desktopRect.height()-height(), 
+				 width(), height());
+}
+
+QRect NotificationWindow::getStartRect() const
+{
+	QRect desktopRect = qApp->desktop()->availableGeometry();
+	int y = hideGeometryAnimation->state() == QAbstractAnimation::Running ?
+			geometry().y() : desktopRect.height();
+	return QRect(desktopRect.width()-width(), y, width(), height());
 }

@@ -34,6 +34,7 @@ private slots:
 private:
 	void addWidget(QWidget* widget);
 	void addAccountLine(const QString& accountName);
+	QRect getStartRect() const;
 	QRect getFinalRect() const;
 
 private:
