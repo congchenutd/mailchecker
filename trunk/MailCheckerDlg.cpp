@@ -12,6 +12,7 @@ MailCheckerDlg::MailCheckerDlg(QWidget *parent, Qt::WFlags flags)
 	: QDialog(parent, flags)
 {
 	ui.setupUi(this);
+	ui.labelIcon->setPixmap(QPixmap(":/MailChecker/Images/Mail.png").scaled(64, 64));
 
 	setting = UserSetting::getInstance();
 	loadSettings();
@@ -23,13 +24,14 @@ MailCheckerDlg::MailCheckerDlg(QWidget *parent, Qt::WFlags flags)
 
 	mapper = new QDataWidgetMapper(this);
 	mapper->setModel(model);
-	mapper->addMapping(ui.leName,     NAME);
-	mapper->addMapping(ui.cbProtocol, PROTOCOL);
-	mapper->addMapping(ui.leHost,     HOST);
-	mapper->addMapping(ui.leUser,     USER);
-	mapper->addMapping(ui.lePassword, PASSWORD);
-	mapper->addMapping(ui.sbPort,     PORT);
-	mapper->addMapping(ui.checkSSL,   SSL);
+	mapper->addMapping(ui.leName,      NAME);
+	mapper->addMapping(ui.cbProtocol,  PROTOCOL);
+	mapper->addMapping(ui.leHost,      HOST);
+	mapper->addMapping(ui.leUser,      USER);
+	mapper->addMapping(ui.lePassword,  PASSWORD);
+	mapper->addMapping(ui.sbPort,      PORT);
+	mapper->addMapping(ui.checkSSL,    SSL);
+	mapper->addMapping(ui.checkEnable, ENABLE);
 	mapper->toFirst();
 
 	ui.listView->setModel(model);
@@ -38,6 +40,8 @@ MailCheckerDlg::MailCheckerDlg(QWidget *parent, Qt::WFlags flags)
 	connect(ui.buttonBoxGeneral, SIGNAL(rejected()), this, SLOT(onCancel()));
 	connect(ui.btAdd,            SIGNAL(clicked()),  this, SLOT(onAdd()));
 	connect(ui.btDel,            SIGNAL(clicked()),  this, SLOT(onDel()));
+	connect(ui.btSave,           SIGNAL(clicked()),  model, SLOT(submitAll()));
+	connect(ui.btCancel,         SIGNAL(clicked()),  model, SLOT(revertAll()));
 	connect(ui.listView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
 			this, SLOT(onSelectAccount(QModelIndex)));
 	connect(ui.listView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
@@ -55,13 +59,16 @@ void MailCheckerDlg::closeEvent(QCloseEvent* event)
 	event->ignore();
 }
 
-void MailCheckerDlg::onCancel() {
+void MailCheckerDlg::onCancel()
+{
 	hide();
+	model->revertAll();
 }
 
 void MailCheckerDlg::onOK()
 {
 	hide();
+	model->submitAll();
 
 	setting->setValue("Interval",         ui.sbInterval->value());
 	setting->setValue("Timeout",          ui.sbTimeout->value());
@@ -71,8 +78,6 @@ void MailCheckerDlg::onOK()
 	setting->setValue("Application",      ui.cbApplication->currentText());
 	setting->setValue("SoundFiles",       ui.cbSound->getFiles().join(";"));
 	setting->setValue("ApplicationFiles", ui.cbApplication->getFiles().join(";"));
-
-	model->submitAll();
 }
 
 void MailCheckerDlg::onOpenApp()
@@ -104,8 +109,8 @@ void MailCheckerDlg::onAdd()
 {
 	int lastRow = model->rowCount();
 	model->insertRow(lastRow);
-	model->setData(model->index(lastRow, 0), tr("New Account"));
-	ui.cbProtocol->setCurrentIndex(-1);
+	model->setData(model->index(lastRow, NAME), tr("New Account"));
+	model->setData(model->index(lastRow, ENABLE), true);
 }
 
 void MailCheckerDlg::onDel()
@@ -126,6 +131,8 @@ void MailCheckerDlg::onSelectAccount(const QModelIndex& idx)
 	connect(ui.cbProtocol, SIGNAL(currentIndexChanged(QString)), this, SLOT(onProtocolChanged(QString)));
 }
 
-void MailCheckerDlg::onProtocolChanged(const QString& protocol) {
+void MailCheckerDlg::onProtocolChanged(const QString& protocol)
+{
 	model->setData(model->index(currentRow, PROTOCOL), protocol);
+	ui.sbPort->setValue(protocol == "IMAP" ? 993 : 110);	
 }

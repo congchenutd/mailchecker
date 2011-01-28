@@ -7,8 +7,7 @@
 #include <QSqlQuery>
 #include <QSound>
 
-TrayIcon::TrayIcon(QObject *parent)
-	: QSystemTrayIcon(parent)
+TrayIcon::TrayIcon(QObject *parent)	: QSystemTrayIcon(parent)
 {
 	dlg = new MailCheckerDlg;
 	notification = new NotificationWindow;
@@ -69,11 +68,15 @@ void TrayIcon::onCheckAll()
 		QString pass        = query.value(4).toString();
 		int     port        = query.value(5).toInt();
 		bool    ssl         = query.value(6).toBool();
+		bool    enable      = query.value(7).toBool();
 
-		connection->setEnableSSL(true);
-		connection->setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
-		if(connection->check())
-			notification->addMailList(connection->getUnseenMails());
+		if(enable)
+		{
+			connection->setEnableSSL(ssl);
+			connection->setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
+			if(connection->check())
+				notification->addMailList(connection->getUnseenMails());
+		}
 	}
 	alert();
 }

@@ -72,13 +72,13 @@ bool Connection::connect()
 	socket->connectToHostEncrypted(account.host, account.port);
 	qDebug() << "\nConnect to host";
 	readResponse();
-	return parseConnection();
+	return parseOK();
 }
 
 bool Connection::login()
 {
 	sendCommand(tr(". login %1 %2").arg(account.user).arg(account.pass));
-	return parseLogin();
+	return parseOK();
 }
 bool Connection::findBoxes() {
 	sendCommand(". list \"\" \"*\"");
@@ -87,7 +87,7 @@ bool Connection::findBoxes() {
 bool Connection::searchUnseen()
 {
 	sendCommand(tr(". examine %1").arg(inboxName));
-	if(!parseExamine())
+	if(!parseOK())
 		return false;
 	sendCommand(". search unseen");
 	return parseUnseen();
@@ -110,27 +110,17 @@ bool Connection::fetchUnseen()
 bool Connection::logout()
 {
 	sendCommand(". logout");
-	return parseLogout();
+	return parseOK();
 }
-
 
 bool Connection::parseOK() {
-	return response.indexOf(". OK") >= 0;
-}
-bool Connection::parseConnection() {
-	return response.indexOf("* OK") > 0 || response.indexOf("ready") > 0;
-}
-bool Connection::parseLogin() {
-	return parseOK();
+	return response.indexOf(". OK") >= 0 || response.indexOf("* OK") >= 0;
 }
 bool Connection::parseBoxes()
 {
 	inboxName    = findBox(response, "inbox");
 	trashBoxName = findBox(response, "trash");
 	return !inboxName.isEmpty() && !trashBoxName.isEmpty();
-}
-bool Connection::parseExamine() {
-	return parseOK();
 }
 bool Connection::parseUnseen()
 {
@@ -171,11 +161,8 @@ bool Connection::parseHeader(MailInfo& info)
 	int dateEnd = response.indexOf("\r", dateStart);
 	info.date = elide(response.mid(dateStart, dateEnd - dateStart + 1));
 
+	info.accountName = account.accountName;
 	return true;
-}
-
-bool Connection::parseLogout() {
-	return parseOK();
 }
 
 void Connection::setAccount(const AccountInfo& acc) {
@@ -221,9 +208,27 @@ void Connection::readResponse()
 		qDebug("Could not receive data:");
 		return;
 	}
-	response = socket->readAll();
+	response.clear();
+	while(!responseDone())
+	{
+		QString data = socket->readAll();
+		if(data.isEmpty())
+		{
+			if(!socket->waitForReadyRead(timeout))
+			{
+				emit connectionError("Could not receive data:");
+				qDebug("Could not receive data:");
+				return;
+			}
+		}
+		response += data;
+	}
 
 	qDebug() << "\n ------------- Response -------------\n" << response;
+}
+
+bool Connection::responseDone() {
+	return parseOK();
 }
 
 MailList Connection::getUnseenMails() const {
@@ -231,5 +236,67 @@ MailList Connection::getUnseenMails() const {
 }
 
 QString Connection::elide(const QString& string, int length /*= 20*/) {
-	return string.length() <= length ? string : string.left(length) + "...";
+	return string.length() <= length ? string : string.left(length) + " ...";
+}
+
+bool Connection::setRead(int id)
+{
+	if(!connect())
+		goto fail;
+	if(!login())
+		goto fail;
+	if(!findBoxes())
+		goto fail;
+	if(!doSetRead(id))
+		goto fail;
+	if(!logout())
+		goto fail;
+
+fail:
+	close();
+	qDebug() << "\nLogout\n";
+	return true;
+}
+
+bool Connection::doSetRead(int id)
+{
+	sendCommand(tr(". select %1").arg(inboxName));
+	if(!parseOK())
+		return false;
+	sendCommand(tr(". store %1 +flags \\seen").arg(id));
+	return parseOK();
+}
+
+bool Connection::delMail(int id)
+{
+	if(!connect())
+		goto fail;
+	if(!login())
+		goto fail;
+	if(!findBoxes())
+		goto fail;
+	if(!doDelMail(id))
+		goto fail;
+	if(!logout())
+		goto fail;
+
+fail:
+	close();
+	qDebug() << "\nLogout\n";
+	return true;
+}
+
+bool Connection::doDelMail(int id)
+{
+	sendCommand(tr(". select %1").arg(inboxName));
+	if(!parseOK())
+		return false;
+	sendCommand(tr(". copy %1 %2").arg(id).arg(trashBoxName));
+	if(!parseOK())
+		return false;
+	sendCommand(tr(". store %1 +flags \\deleted").arg(id));
+	if(!parseOK())
+		return false;
+	sendCommand(". expunge");
+	return parseOK();
 }
