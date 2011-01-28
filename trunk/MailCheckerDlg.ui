@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>446</width>
-    <height>367</height>
+    <width>404</width>
+    <height>396</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -63,13 +63,30 @@
              <string> sec</string>
             </property>
             <property name="minimum">
-             <number>10</number>
+             <number>1</number>
             </property>
             <property name="maximum">
              <number>60</number>
             </property>
-            <property name="singleStep">
-             <number>10</number>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Show notification</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="sbNotification">
+            <property name="suffix">
+             <string> sec</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>60</number>
             </property>
            </widget>
           </item>

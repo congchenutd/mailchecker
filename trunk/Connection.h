@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QTcpSocket>
 #include <QSslSocket>
+#include <QList>
 
 struct MailInfo
 {
@@ -11,6 +12,12 @@ struct MailInfo
 	QString subject;
 	QString from;
 	QString date;
+};
+
+struct MailList
+{
+	QString         accountName;
+	QList<MailInfo> mails;
 };
 
 struct AccountInfo
@@ -30,8 +37,6 @@ struct AccountInfo
 };
 
 class QTcpSocket;
-
-typedef QList<MailInfo> MailList;
 
 class Connection : public QObject
 {
@@ -70,6 +75,7 @@ protected:
 
 	void sendCommand(const QString& command);
 	void readResponse();
+	QString elide(const QString& string, int length = 50);
 
 protected slots:
 	void onError(QAbstractSocket::SocketError error);

@@ -38,8 +38,6 @@ void Connection::onStateChanged(QAbstractSocket::SocketState state)
 
 bool Connection::check() 
 {
-	unseenMails.clear();
-	unseenMailsIDs.clear();
 	if(!connect())
 		goto fail;
 	if(!login())
@@ -96,6 +94,7 @@ bool Connection::searchUnseen()
 }
 bool Connection::fetchUnseen()
 {
+	unseenMails.mails.clear();
 	foreach(int id, unseenMailsIDs)
 	{
 		sendCommand(tr(". fetch %1 body[header.fields (subject from date)]").arg(id));
@@ -104,7 +103,7 @@ bool Connection::fetchUnseen()
 		if(!result)
 			return false;
 		info.id = id;
-		unseenMails << info;
+		unseenMails.mails << info;
 	}
 	return true;
 }
@@ -135,6 +134,7 @@ bool Connection::parseExamine() {
 }
 bool Connection::parseUnseen()
 {
+	unseenMailsIDs.clear();
 	int start = response.indexOf("* SEARCH ") + 9;
 	if(start == -1)
 		return false;
@@ -147,28 +147,29 @@ bool Connection::parseUnseen()
 		if(i > 0)
 			unseenMailsIDs << i;
 	}
+	qSort(unseenMailsIDs.begin(), unseenMailsIDs.end(), qGreater<int>());
 	return true;
 }
 
 bool Connection::parseHeader(MailInfo& info)
 {
-	int fromStart = response.indexOf("From: ");
+	int fromStart = response.indexOf("From: ") + 6;
 	if(fromStart == -1)
 		return false;
 	int fromEnd = response.indexOf("\r", fromStart);
-	info.from = response.mid(fromStart, fromEnd - fromStart + 1);
+	info.from = elide(response.mid(fromStart, fromEnd - fromStart + 1));
 
-	int subjectStart = response.indexOf("Subject: ");
+	int subjectStart = response.indexOf("Subject: ") + 9;
 	if(subjectStart == -1)
 		return false;
 	int subjectEnd = response.indexOf("\r", subjectStart);
-	info.subject = response.mid(subjectStart, subjectEnd - subjectStart + 1);
+	info.subject = elide(response.mid(subjectStart, subjectEnd - subjectStart + 1));
 
-	int dateStart = response.indexOf("Date: ");
+	int dateStart = response.indexOf("Date: ") + 6;
 	if(dateStart == -1)
 		return false;
 	int dateEnd = response.indexOf("\r", dateStart);
-	info.date = response.mid(dateStart, dateEnd - dateStart + 1);
+	info.date = elide(response.mid(dateStart, dateEnd - dateStart + 1));
 
 	return true;
 }
@@ -179,6 +180,7 @@ bool Connection::parseLogout() {
 
 void Connection::setAccount(const AccountInfo& acc) {
 	account = acc;
+	unseenMails.accountName = acc.accountName;
 }
 
 QString Connection::findBox(const QString& string, const QString& target) const
@@ -187,8 +189,7 @@ QString Connection::findBox(const QString& string, const QString& target) const
 	foreach(QString line, lines)
 	{
 		QStringList sections = line.split(" ");
-		foreach(QString section, sections)
-		{
+		foreach(QString section, sections) {
 			if(section.indexOf(target, 0, Qt::CaseInsensitive) > 0)
 			{
 				QString name = section.remove('\"');
@@ -227,4 +228,8 @@ void Connection::readResponse()
 
 MailList Connection::getUnseenMails() const {
 	return unseenMails;
+}
+
+QString Connection::elide(const QString& string, int length /*= 20*/) {
+	return string.length() <= length ? string : string.left(length) + "...";
 }

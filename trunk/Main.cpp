@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
 	createTables();
 
 	QApplication app(argc, argv);
+	app.setQuitOnLastWindowClosed(false);
 	TrayIcon tray;
 	return app.exec();
 }

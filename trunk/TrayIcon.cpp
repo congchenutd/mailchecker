@@ -2,13 +2,16 @@
 #include "MailCheckerDlg.h"
 #include "Setting.h"
 #include "Connection.h"
+#include "NotificationWindow.h"
 #include <QMenu>
 #include <QSqlQuery>
+#include <QSound>
 
 TrayIcon::TrayIcon(QObject *parent)
 	: QSystemTrayIcon(parent)
 {
 	dlg = new MailCheckerDlg;
+	notification = new NotificationWindow;
 
 	QMenu* trayMenu = new QMenu;
 
@@ -33,6 +36,7 @@ TrayIcon::TrayIcon(QObject *parent)
 	show();
 
 	connect(actionCheck,       SIGNAL(triggered()), this, SLOT(onCheckAll()));
+	connect(actionTellMeAgain, SIGNAL(triggered()), this, SLOT(onTellMeAgain()));
 	connect(actionExit,        SIGNAL(triggered()), qApp, SLOT(quit()));
 	connect(actionSettings,    SIGNAL(triggered()), dlg,  SLOT(show()));
 	connect(actionApplication, SIGNAL(triggered()), dlg,  SLOT(onOpenApp()));
@@ -53,6 +57,7 @@ void TrayIcon::onTrayActivated(QSystemTrayIcon::ActivationReason reason)
 
 void TrayIcon::onCheckAll()
 {
+	notification->clear();
 	QSqlQuery query;
 	query.exec(tr("select * from Accounts"));
 	while(query.next())
@@ -68,23 +73,28 @@ void TrayIcon::onCheckAll()
 		connection->setEnableSSL(true);
 		connection->setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
 		if(connection->check())
-		{
-			QString message;
-			MailList mails = connection->getUnseenMails();
-			foreach(MailInfo mail, mails)
-				message += mail.from + "\n" + mail.subject + "\n" + mail.date + "\n\n";
-			showMessage(tr("You've got mail!"), message);
-		}
+			notification->addMailList(connection->getUnseenMails());
 	}
 	alert();
 }
 
 void TrayIcon::alert()
 {
+	if(!notification->hasNewMail())
+		return;
+
 	QString soundFile = UserSetting::getInstance()->value("Sound").toString();
-//	if()
+	if(QFile::exists(soundFile))
+		QSound::play(soundFile);
+
+	if(UserSetting::getInstance()->value("Popup").toBool())
+		onTellMeAgain();
 }
 
 void TrayIcon::onTimeout() {
 	onCheckAll();
+}
+
+void TrayIcon::onTellMeAgain() {
+	notification->showNofitication();
 }
