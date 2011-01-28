@@ -9,6 +9,7 @@
 
 class QVBoxLayout;
 class QPropertyAnimation;
+class MailWidget;
 
 class NotificationWindow : public QWidget
 {
@@ -26,19 +27,17 @@ protected:
 	virtual void mousePressEvent(QMouseEvent*);
 	virtual void mouseMoveEvent (QMouseEvent*);
 
-private:
-	void popUp();
-
 private slots:
 	void onHide();
+	void onDelMail(MailWidget* widget);
 
 private:
 	void addWidget(QWidget* widget);
-	void clearWidgets();
+	void addAccountLine(const QString& accountName);
+	QRect getFinalRect() const;
 
 private:
 	Ui::NotificationWindow ui;
-	QList<MailList> lists;
 	QVBoxLayout* layout;
 	QList<QWidget*> widgets;
 	QPropertyAnimation* showGeometryAnimation;

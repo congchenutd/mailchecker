@@ -26,7 +26,8 @@ void createTables()
 			   User varchar, \
 			   Password varchar, \
 			   Port int, \
-			   SSL bool \
+			   SSL bool, \
+			   Enable bool \
    )");
 }
 

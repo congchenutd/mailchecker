@@ -3,8 +3,7 @@
 
 #include <QWidget>
 #include "ui_MailWidget.h"
-
-struct MailInfo;
+#include "Connection.h"
 
 class MailWidget : public QWidget
 {
@@ -13,14 +12,19 @@ class MailWidget : public QWidget
 public:
 	MailWidget(const MailInfo& info, QWidget *parent = 0);
 	void setMail(const MailInfo& info);
+	QString getAccountName() const;
+	int     getMailID()      const;
 
 private slots:
 	void onSetRead();
 	void onDel();
 
+signals:
+	void mailDeleted(MailWidget*);
+
 private:
 	Ui::MailWidget ui;
-	int id;
+	MailInfo mailInfo;
 };
 
 #endif // MAILWIDGET_H

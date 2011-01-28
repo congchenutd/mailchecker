@@ -8,16 +8,19 @@
 
 struct MailInfo
 {
+	QString accountName;
 	int     id;
 	QString subject;
 	QString from;
 	QString date;
 };
 
+typedef QList<MailInfo> Mails;
+
 struct MailList
 {
-	QString         accountName;
-	QList<MailInfo> mails;
+	QString accountName;
+	Mails   mails;
 };
 
 struct AccountInfo
@@ -43,12 +46,14 @@ class Connection : public QObject
 	Q_OBJECT
 
 public:
-	Connection(QObject *parent);
+	Connection(QObject* parent = 0);
 
 	void setAccount(const AccountInfo& acc);
 	void setEnableSSL(bool ssl);
 	bool check();
 	MailList getUnseenMails() const;
+	bool setRead(int id);
+	bool delMail(int id);	
 
 protected:
 	bool connect();
@@ -58,23 +63,20 @@ protected:
 	bool fetchUnseen();
 	bool logout();
 	void close();
+	bool doSetRead(int id);
+	bool doDelMail(int id);
 
 	bool parseOK();
-	bool parseConnection();
-	bool parseLogin();
 	bool parseBoxes();
-	bool parseExamine();
 	bool parseUnseen();
 	bool parseHeader(MailInfo& info);
-	bool parseLogout();
 	
 	QString findBox(const QString& string, const QString& target) const;
 
-	void setRead(int id);
-	void delMail(int id);	
 
 	void sendCommand(const QString& command);
 	void readResponse();
+	bool responseDone();
 	QString elide(const QString& string, int length = 50);
 
 protected slots:

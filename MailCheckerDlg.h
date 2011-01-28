@@ -36,7 +36,7 @@ private slots:
 
 private:
 	Ui::MailCheckerDlgClass ui;
-	enum {NAME, PROTOCOL, HOST, USER, PASSWORD, PORT, SSL};
+	enum {NAME, PROTOCOL, HOST, USER, PASSWORD, PORT, SSL, ENABLE};
 
 	UserSetting* setting;
 	QSqlTableModel* model;
