@@ -65,12 +65,12 @@ void MailCheckerDlg::onOK()
 
 	setting->setValue("Interval",         ui.sbInterval->value());
 	setting->setValue("Timeout",          ui.sbTimeout->value());
+	setting->setValue("ShowNotification", ui.sbNotification->value());
 	setting->setValue("Popup",            ui.cbPopup->currentText() == tr("Yes"));
 	setting->setValue("Sound",            ui.cbSound->currentText());
 	setting->setValue("Application",      ui.cbApplication->currentText());
 	setting->setValue("SoundFiles",       ui.cbSound->getFiles().join(";"));
 	setting->setValue("ApplicationFiles", ui.cbApplication->getFiles().join(";"));
-	setting->setValue("SSL",              ui.checkSSL->isChecked());
 
 	model->submitAll();
 }
@@ -83,8 +83,9 @@ void MailCheckerDlg::onOpenApp()
 
 void MailCheckerDlg::loadSettings()
 {
-	ui.sbInterval->setValue(setting->value("Interval").toInt());
-	ui.sbTimeout ->setValue(setting->value("Timeout") .toInt());
+	ui.sbInterval    ->setValue(setting->value("Interval").toInt());
+	ui.sbTimeout     ->setValue(setting->value("Timeout") .toInt());
+	ui.sbNotification->setValue(setting->value("ShowNotification").toInt());
 	ui.cbPopup->setCurrentIndex(setting->value("Popup").toBool() ? 0 : 1);
 
 	QString soundFiles = setting->value("SoundFiles").toString();

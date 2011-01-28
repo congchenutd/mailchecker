@@ -7,6 +7,7 @@
 class MailCheckerDlg;
 class QAction;
 class Connection;
+class NotificationWindow;
 
 class TrayIcon : public QSystemTrayIcon
 {
@@ -19,6 +20,7 @@ private slots:
 	void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 	void onCheckAll();
 	void onTimeout();
+	void onTellMeAgain();
 
 private:
 	void alert();
@@ -32,6 +34,7 @@ private:
 	QAction* actionExit;
 	Connection* connection;
 	QTimer timer;
+	NotificationWindow* notification;
 };
 
 #endif // TRAYICON_H
