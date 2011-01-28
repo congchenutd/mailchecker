@@ -3,6 +3,7 @@
 
 #include <QSystemTrayIcon>
 #include <QTimer>
+#include <QSet>
 
 class MailCheckerDlg;
 class QAction;
@@ -21,6 +22,7 @@ private slots:
 	void onCheckAll();
 	void onTimeout();
 	void onTellMeAgain();
+	void onCheckDone();
 
 private:
 	void alert();
@@ -32,9 +34,9 @@ private:
 	QAction* actionApplication;
 	QAction* actionSettings;
 	QAction* actionExit;
-	Connection* connection;
 	QTimer timer;
 	NotificationWindow* notification;
+	QSet<Connection*> connections;
 };
 
 #endif // TRAYICON_H

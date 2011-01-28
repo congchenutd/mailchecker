@@ -2,38 +2,16 @@
 #include "Setting.h"
 #include <QStringList>
 
-Connection::Connection(QObject *parent)	: QObject(parent), socket(0)
+Connection::Connection(QObject *parent)	: QThread(parent), socket(0)
 {
 	timeout = UserSetting::getInstance()->value("Timeout").toInt() * 1000;  // ms
-	setEnableSSL(true);
+	QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
 }
 
 void Connection::setEnableSSL(bool ssl)
 {
-	if(socket != 0)
-		socket->deleteLater();
 	socket = new QSslSocket(this);
 	qDebug() << "\nnew socket";
-	//QObject::connect(socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
-	//				this,   SLOT(onStateChanged(QAbstractSocket::SocketState)));
-	//QObject::connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), 
-	//				 this, SLOT(onError(QAbstractSocket::SocketError)));
-}
-
-void Connection::onError(QAbstractSocket::SocketError error)
-{
-	//qDebug() << "Error: " << socket->errorString();
-	//emit connectionError(socket->errorString());
-}
-
-void Connection::onStateChanged(QAbstractSocket::SocketState state)
-{
-	//if(state == QAbstractSocket::UnconnectedState)
-	//{
-	//	qDebug() << "Connection lost";
-	//	socket->deleteLater();
-	//	socket = 0;
-	//}
 }
 
 bool Connection::check() 
@@ -51,20 +29,12 @@ bool Connection::check()
 	if(!logout())
 		goto fail;
 
-	close();
 	qDebug() << "\nLogout\n";
 	return true;
 
 fail:
-	close();
 	qDebug() << "\nMission failed\n";
 	return false;
-}
-
-void Connection::close()
-{
-	socket->deleteLater();
-	socket = 0;
 }
 
 bool Connection::connect()
@@ -204,7 +174,6 @@ void Connection::readResponse()
 {
 	if(!socket->waitForReadyRead(timeout))
 	{
-		emit connectionError("Could not receive data:");
 		qDebug("Could not receive data:");
 		return;
 	}
@@ -216,7 +185,6 @@ void Connection::readResponse()
 		{
 			if(!socket->waitForReadyRead(timeout))
 			{
-				emit connectionError("Could not receive data:");
 				qDebug("Could not receive data:");
 				return;
 			}
@@ -253,7 +221,6 @@ bool Connection::setRead(int id)
 		goto fail;
 
 fail:
-	close();
 	qDebug() << "\nLogout\n";
 	return true;
 }
@@ -281,7 +248,6 @@ bool Connection::delMail(int id)
 		goto fail;
 
 fail:
-	close();
 	qDebug() << "\nLogout\n";
 	return true;
 }
@@ -299,4 +265,23 @@ bool Connection::doDelMail(int id)
 		return false;
 	sendCommand(". expunge");
 	return parseOK();
+}
+
+void Connection::run()
+{
+	successful = false;
+	switch(mission)
+	{
+	case CHECK:
+		successful = check();
+		break;
+	case DELETE:
+		successful = delMail(targetID);
+		break;
+	case READ:
+		successful = setRead(targetID);
+		break;
+	default:
+		break;
+	}
 }

@@ -33,14 +33,16 @@ void MailWidget::onSetRead()
 		bool    ssl         = query.value(6).toBool();
 		bool    enable      = query.value(7).toBool();
 
+		Connection* connection = new Connection(this);
+		connection->setEnableSSL(ssl);
+		connection->setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
+		connection->setMission(Connection::READ);
+		connection->setTargetID(mailInfo.id);
+		connection->start();
+
 		QFont font;
 		font.setBold(false);
 		ui.labelSubject->setFont(font);
-
-		Connection connection;
-		connection.setEnableSSL(ssl);
-		connection.setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
-		connection.setRead(mailInfo.id);
 	}
 }
 
@@ -58,14 +60,15 @@ void MailWidget::onDel()
 		int     port        = query.value(5).toInt();
 		bool    ssl         = query.value(6).toBool();
 		bool    enable      = query.value(7).toBool();
-
+		
+		Connection* connection = new Connection;
+		connection->setEnableSSL(ssl);
+		connection->setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
+		connection->setMission(Connection::DELETE);
+		connection->setTargetID(mailInfo.id);
+		connection->start();
 		emit mailDeleted(this);
 		deleteLater();		
-		
-		Connection connection;
-		connection.setEnableSSL(ssl);
-		connection.setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
-		connection.delMail(mailInfo.id);
 	}
 }
 
