@@ -33,13 +33,14 @@ void MailWidget::onSetRead()
 		bool    ssl         = query.value(6).toBool();
 		bool    enable      = query.value(7).toBool();
 
-		if(enable)
-		{
-			Connection connection;
-			connection.setEnableSSL(ssl);
-			connection.setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
-			connection.setRead(mailInfo.id);
-		}
+		QFont font;
+		font.setBold(false);
+		ui.labelSubject->setFont(font);
+
+		Connection connection;
+		connection.setEnableSSL(ssl);
+		connection.setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
+		connection.setRead(mailInfo.id);
 	}
 }
 
@@ -58,16 +59,14 @@ void MailWidget::onDel()
 		bool    ssl         = query.value(6).toBool();
 		bool    enable      = query.value(7).toBool();
 
-		if(enable)
-		{
-			Connection connection;
-			connection.setEnableSSL(ssl);
-			connection.setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
-//			connection.delMail(mailInfo.id);
-		}
+		emit mailDeleted(this);
+		deleteLater();		
+		
+		Connection connection;
+		connection.setEnableSSL(ssl);
+		connection.setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
+		connection.delMail(mailInfo.id);
 	}
-	emit mailDeleted(this);
-	deleteLater();
 }
 
 QString MailWidget::getAccountName() const {
