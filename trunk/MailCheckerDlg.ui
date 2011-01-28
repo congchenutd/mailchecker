@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>422</width>
-    <height>361</height>
+    <height>417</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,6 +20,10 @@
       <number>0</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
+      <attribute name="icon">
+       <iconset resource="MailCheckerDlg.qrc">
+        <normaloff>:/MailChecker/Images/Settings.png</normaloff>:/MailChecker/Images/Settings.png</iconset>
+      </attribute>
       <attribute name="title">
        <string>General</string>
       </attribute>
@@ -188,6 +192,10 @@
       </layout>
      </widget>
      <widget class="QWidget" name="tabAccounts">
+      <attribute name="icon">
+       <iconset resource="MailCheckerDlg.qrc">
+        <normaloff>:/MailChecker/Images/Account.png</normaloff>:/MailChecker/Images/Account.png</iconset>
+      </attribute>
       <attribute name="title">
        <string>Accounts</string>
       </attribute>
@@ -410,6 +418,10 @@
       </layout>
      </widget>
      <widget class="QWidget" name="tabAbout">
+      <attribute name="icon">
+       <iconset resource="MailCheckerDlg.qrc">
+        <normaloff>:/MailChecker/Images/About.png</normaloff>:/MailChecker/Images/About.png</iconset>
+      </attribute>
       <attribute name="title">
        <string>About</string>
       </attribute>
