@@ -25,6 +25,10 @@ private:
 
 signals:
 	void mailDeleted(QWidget*);
+	void newMailCountChanged(int);
+
+public:
+	static int newMailCount;
 
 private:
 	Ui::MailWidget ui;

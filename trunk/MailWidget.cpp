@@ -8,6 +8,7 @@ MailWidget::MailWidget(const MailInfo& info, QWidget *parent) : QWidget(parent)
 	connect(ui.btDel,     SIGNAL(clicked()), this, SLOT(onDel()));
 
 	setMail(info);
+	newMailCount ++;
 }
 
 void MailWidget::setMail(const MailInfo& info)
@@ -27,16 +28,18 @@ void MailWidget::onSetRead()
 	connection->setTargetID(mailInfo.id);
 	connection->start();
 	setSubjectBold(false);
+	emit newMailCountChanged(--newMailCount);
 }
 
 void MailWidget::onDel()
 {
-	//Connection* connection = new Connection;
-	//connection->setAccount(getAccountInfo(mailInfo.accountName));
-	//connection->setMission(Connection::DELETE);
-	//connection->setTargetID(mailInfo.id);
-	//connection->start();
+	Connection* connection = new Connection;
+	connection->setAccount(getAccountInfo(mailInfo.accountName));
+	connection->setMission(Connection::DELETE);
+	connection->setTargetID(mailInfo.id);
+	connection->start();
 	emit mailDeleted(this);
+	emit newMailCountChanged(--newMailCount);
 	deleteLater();
 }
 
@@ -73,3 +76,5 @@ void MailWidget::setSubjectBold(bool bold)
 	font.setBold(bold);
 	ui.labelSubject->setFont(font);
 }
+
+int MailWidget::newMailCount = 0;
