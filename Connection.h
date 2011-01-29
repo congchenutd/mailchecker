@@ -1,7 +1,6 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-#include <QObject>
 #include <QTcpSocket>
 #include <QSslSocket>
 #include <QList>
@@ -18,7 +17,7 @@ struct MailInfo
 
 typedef QList<MailInfo> Mails;
 
-struct MailList
+struct AccountMails
 {
 	QString accountName;
 	Mails   mails;
@@ -38,6 +37,7 @@ struct AccountInfo
 	QString pass;
 	int     port;
 	bool    ssl;
+	bool    enable;
 };
 
 class QTcpSocket;
@@ -45,7 +45,6 @@ class QTcpSocket;
 class Connection : public QThread
 {
 	Q_OBJECT
-
 
 public:
 	Connection(QObject* parent = 0);
@@ -56,13 +55,13 @@ public:
 	void setTargetID(int id)   { targetID = id; }
 	bool missionSuccessful() const { return successful; }
 	void setAccount(const AccountInfo& acc);
-	void setEnableSSL(bool ssl);
-	bool check();
-	MailList getUnseenMails() const;
-	bool setRead(int id);
-	bool delMail(int id);	
+	AccountMails getNewMails() const;
 
 protected:
+	bool check();
+	bool setRead(int id);
+	bool delMail(int id);
+
 	bool connect();
 	bool login();
 	bool findBoxes();
@@ -71,18 +70,16 @@ protected:
 	bool logout();
 	bool doSetRead(int id);
 	bool doDelMail(int id);
+	QString findBox(const QString& string, const QString& target) const;
+	QString elide(const QString& string, int length = 50) const;
 
 	bool parseOK();
 	bool parseBoxes();
 	bool parseUnseen();
 	bool parseHeader(MailInfo& info);
-	
-	QString findBox(const QString& string, const QString& target) const;
 
 	void sendCommand(const QString& command);
 	void readResponse();
-	bool responseDone();
-	QString elide(const QString& string, int length = 50);
 
 protected:
 	int     timeout;
@@ -91,8 +88,8 @@ protected:
 	QSslSocket* socket;
 	QByteArray response;
 	AccountInfo account;
-	QList<int> unseenMailsIDs;
-	MailList   unseenMails;
+	QList<int> newIDs;
+	AccountMails   newMails;
 	Mission mission;
 	int targetID;
 	bool successful;

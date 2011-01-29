@@ -5,13 +5,10 @@
 Connection::Connection(QObject *parent)	: QThread(parent), socket(0)
 {
 	timeout = UserSetting::getInstance()->value("Timeout").toInt() * 1000;  // ms
-	QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
-}
-
-void Connection::setEnableSSL(bool ssl)
-{
 	socket = new QSslSocket(this);
 	qDebug() << "\nnew socket";
+
+	QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
 }
 
 bool Connection::check() 
@@ -44,7 +41,6 @@ bool Connection::connect()
 	readResponse();
 	return parseOK();
 }
-
 bool Connection::login()
 {
 	sendCommand(tr(". login %1 %2").arg(account.user).arg(account.pass));
@@ -64,8 +60,8 @@ bool Connection::searchUnseen()
 }
 bool Connection::fetchUnseen()
 {
-	unseenMails.mails.clear();
-	foreach(int id, unseenMailsIDs)
+	newMails.mails.clear();
+	foreach(int id, newIDs)
 	{
 		sendCommand(tr(". fetch %1 body[header.fields (subject from date)]").arg(id));
 		MailInfo info;
@@ -73,7 +69,7 @@ bool Connection::fetchUnseen()
 		if(!result)
 			return false;
 		info.id = id;
-		unseenMails.mails << info;
+		newMails.mails << info;
 	}
 	return true;
 }
@@ -94,7 +90,7 @@ bool Connection::parseBoxes()
 }
 bool Connection::parseUnseen()
 {
-	unseenMailsIDs.clear();
+	newIDs.clear();
 	int start = response.indexOf("* SEARCH ") + 9;
 	if(start == -1)
 		return false;
@@ -105,9 +101,9 @@ bool Connection::parseUnseen()
 	{
 		int i = id.toInt();
 		if(i > 0)
-			unseenMailsIDs << i;
+			newIDs << i;
 	}
-	qSort(unseenMailsIDs.begin(), unseenMailsIDs.end(), qGreater<int>());
+	qSort(newIDs.begin(), newIDs.end(), qGreater<int>());
 	return true;
 }
 
@@ -135,9 +131,10 @@ bool Connection::parseHeader(MailInfo& info)
 	return true;
 }
 
-void Connection::setAccount(const AccountInfo& acc) {
+void Connection::setAccount(const AccountInfo& acc)
+{
 	account = acc;
-	unseenMails.accountName = acc.accountName;
+	newMails.accountName = acc.accountName;
 }
 
 QString Connection::findBox(const QString& string, const QString& target) const
@@ -159,7 +156,7 @@ QString Connection::findBox(const QString& string, const QString& target) const
 
 void Connection::sendCommand(const QString& command)
 {
-	if(socket == 0 || !socket->isOpen())
+	if(!socket->isOpen())
 		return;
 	qint64 bytesWritten = socket->write(command.toUtf8() + "\r\n");
 	if(bytesWritten != command.size() + 2)
@@ -178,7 +175,7 @@ void Connection::readResponse()
 		return;
 	}
 	response.clear();
-	while(!responseDone())
+	while(!parseOK())  // done
 	{
 		QString data = socket->readAll();
 		if(data.isEmpty())
@@ -189,21 +186,18 @@ void Connection::readResponse()
 				return;
 			}
 		}
-		response += data;
+		else
+			response += data;
 	}
 
 	qDebug() << "\n ------------- Response -------------\n" << response;
 }
 
-bool Connection::responseDone() {
-	return parseOK();
+AccountMails Connection::getNewMails() const {
+	return newMails;
 }
 
-MailList Connection::getUnseenMails() const {
-	return unseenMails;
-}
-
-QString Connection::elide(const QString& string, int length /*= 20*/) {
+QString Connection::elide(const QString& string, int length /*= 20*/) const {
 	return string.length() <= length ? string : string.left(length) + " ...";
 }
 

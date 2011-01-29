@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QSqlQuery>
 #include <QSound>
+#include <QProcess>
 
 TrayIcon::TrayIcon(QObject *parent)	: QSystemTrayIcon(parent)
 {
@@ -50,7 +51,10 @@ TrayIcon::TrayIcon(QObject *parent)	: QSystemTrayIcon(parent)
 void TrayIcon::onTrayActivated(QSystemTrayIcon::ActivationReason reason)
 {
 	if(reason == QSystemTrayIcon::DoubleClick)
-		dlg->onOpenApp();
+	{
+		QProcess* process = new QProcess;
+		process->start(tr("\"%1\"").arg(UserSetting::getInstance()->value("Application").toString()));
+	}
 }
 
 void TrayIcon::onCheckAll()
@@ -60,23 +64,23 @@ void TrayIcon::onCheckAll()
 	query.exec(tr("select * from Accounts"));
 	while(query.next())
 	{
-		QString accountName = query.value(0).toString();
-		QString protocol    = query.value(1).toString();
-		QString host        = query.value(2).toString();
-		QString user        = query.value(3).toString();
-		QString pass        = query.value(4).toString();
-		int     port        = query.value(5).toInt();
-		bool    ssl         = query.value(6).toBool();
-		bool    enable      = query.value(7).toBool();
+		AccountInfo account;
+		account.accountName = query.value(0).toString();
+		account.protocol    = query.value(1).toString();
+		account.host        = query.value(2).toString();
+		account.user        = query.value(3).toString();
+		account.pass        = query.value(4).toString();
+		account.port        = query.value(5).toInt();
+		account.ssl         = query.value(6).toBool();
+		account.enable      = query.value(7).toBool();
 
-		if(enable)
+		if(account.enable)
 		{
 			Connection* connection = new Connection(this);
-			connections << connection;
+			threads << connection;
 			connect(connection, SIGNAL(finished()), this, SLOT(onCheckDone()));
 
-			connection->setEnableSSL(ssl);
-			connection->setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
+			connection->setAccount(account);
 			connection->setMission(Connection::CHECK);
 			connection->start();
 		}
@@ -87,16 +91,19 @@ void TrayIcon::onCheckDone()
 {
 	Connection* connection = qobject_cast<Connection*>(sender());
 	if(connection->missionSuccessful())
-		notification->addMailList(connection->getUnseenMails());
-	connections.remove(connection);
-	if(connections.isEmpty())
+		notification->addAccountMails(connection->getNewMails());
+	threads.remove(connection);
+	if(threads.isEmpty())
 		alert();
 }
 
 void TrayIcon::alert()
 {
 	if(!notification->hasNewMail())
+	{
+		setIcon(QIcon(":/MailChecker/Images/Mail.png"));
 		return;
+	}
 
 	QString soundFile = UserSetting::getInstance()->value("Sound").toString();
 	if(QFile::exists(soundFile))
@@ -104,6 +111,8 @@ void TrayIcon::alert()
 
 	if(UserSetting::getInstance()->value("Popup").toBool())
 		onTellMeAgain();
+
+	setIcon(QIcon(":/MailChecker/Images/NewMail.png"));
 }
 
 void TrayIcon::onTimeout() {

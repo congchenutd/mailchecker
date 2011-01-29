@@ -16,60 +16,28 @@ void MailWidget::setMail(const MailInfo& info)
 	ui.labelSubject->setText(info.subject);
 	ui.labelFrom->setText(info.from);
 	ui.labelDate->setText(info.date);
+	setSubjectBold(true);
 }
 
 void MailWidget::onSetRead()
 {
-	QSqlQuery query;
-	query.exec(tr("select * from Accounts where Name = \"%1\"").arg(mailInfo.accountName));
-	if(query.next())
-	{
-		QString accountName = query.value(0).toString();
-		QString protocol    = query.value(1).toString();
-		QString host        = query.value(2).toString();
-		QString user        = query.value(3).toString();
-		QString pass        = query.value(4).toString();
-		int     port        = query.value(5).toInt();
-		bool    ssl         = query.value(6).toBool();
-		bool    enable      = query.value(7).toBool();
-
-		Connection* connection = new Connection(this);
-		connection->setEnableSSL(ssl);
-		connection->setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
-		connection->setMission(Connection::READ);
-		connection->setTargetID(mailInfo.id);
-		connection->start();
-
-		QFont font;
-		font.setBold(false);
-		ui.labelSubject->setFont(font);
-	}
+	Connection* connection = new Connection(this);
+	connection->setAccount(getAccountInfo(mailInfo.accountName));
+	connection->setMission(Connection::READ);
+	connection->setTargetID(mailInfo.id);
+	connection->start();
+	setSubjectBold(false);
 }
 
 void MailWidget::onDel()
 {
-	QSqlQuery query;
-	query.exec(tr("select * from Accounts where Name = \"%1\"").arg(mailInfo.accountName));
-	if(query.next())
-	{
-		QString accountName = query.value(0).toString();
-		QString protocol    = query.value(1).toString();
-		QString host        = query.value(2).toString();
-		QString user        = query.value(3).toString();
-		QString pass        = query.value(4).toString();
-		int     port        = query.value(5).toInt();
-		bool    ssl         = query.value(6).toBool();
-		bool    enable      = query.value(7).toBool();
-		
-		Connection* connection = new Connection;
-		connection->setEnableSSL(ssl);
-		connection->setAccount(AccountInfo(accountName, protocol, host, user, pass, port, ssl));
-		connection->setMission(Connection::DELETE);
-		connection->setTargetID(mailInfo.id);
-		connection->start();
-		emit mailDeleted(this);
-		deleteLater();		
-	}
+	//Connection* connection = new Connection;
+	//connection->setAccount(getAccountInfo(mailInfo.accountName));
+	//connection->setMission(Connection::DELETE);
+	//connection->setTargetID(mailInfo.id);
+	//connection->start();
+	emit mailDeleted(this);
+	deleteLater();
 }
 
 QString MailWidget::getAccountName() const {
@@ -78,4 +46,30 @@ QString MailWidget::getAccountName() const {
 
 int MailWidget::getMailID() const {
 	return mailInfo.id;
+}
+
+AccountInfo MailWidget::getAccountInfo(const QString& name) const
+{
+	AccountInfo result;
+	QSqlQuery query;
+	query.exec(tr("select * from Accounts where Name = \"%1\"").arg(name));
+	if(query.next())
+	{
+		result.accountName = query.value(0).toString();
+		result.protocol    = query.value(1).toString();
+		result.host        = query.value(2).toString();
+		result.user        = query.value(3).toString();
+		result.pass        = query.value(4).toString();
+		result.port        = query.value(5).toInt();
+		result.ssl         = query.value(6).toBool();
+		result.enable      = query.value(7).toBool();
+	}
+	return result;
+}
+
+void MailWidget::setSubjectBold(bool bold)
+{
+	QFont font;
+	font.setBold(bold);
+	ui.labelSubject->setFont(font);
 }

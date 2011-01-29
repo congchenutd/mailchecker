@@ -80,12 +80,6 @@ void MailCheckerDlg::onOK()
 	setting->setValue("ApplicationFiles", ui.cbApplication->getFiles().join(";"));
 }
 
-void MailCheckerDlg::onOpenApp()
-{
-	QProcess* process = new QProcess;
-	process->start(tr("\"%1\"").arg(setting->value("Application").toString()));
-}
-
 void MailCheckerDlg::loadSettings()
 {
 	ui.sbInterval    ->setValue(setting->value("Interval").toInt());

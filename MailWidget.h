@@ -19,8 +19,12 @@ private slots:
 	void onSetRead();
 	void onDel();
 
+private:
+	AccountInfo getAccountInfo(const QString& name) const;
+	void setSubjectBold(bool bold);
+
 signals:
-	void mailDeleted(MailWidget*);
+	void mailDeleted(QWidget*);
 
 private:
 	Ui::MailWidget ui;
