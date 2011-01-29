@@ -103,8 +103,17 @@ void MailCheckerDlg::onAdd()
 {
 	int lastRow = model->rowCount();
 	model->insertRow(lastRow);
-	model->setData(model->index(lastRow, NAME), tr("New Account"));
-	model->setData(model->index(lastRow, ENABLE), true);
+	model->setData(model->index(lastRow, NAME),     tr("New Account"));
+	model->setData(model->index(lastRow, PROTOCOL), "IMAP");
+	model->setData(model->index(lastRow, PORT),     993);
+	model->setData(model->index(lastRow, SSL),      true);
+	model->setData(model->index(lastRow, ENABLE),   true);
+	QModelIndex idx = model->index(lastRow, 0);
+	ui.listView->selectionModel()->select(idx, QItemSelectionModel::ClearAndSelect);
+	onSelectAccount(idx);
+	mapper->setCurrentModelIndex(idx);
+	ui.leName->selectAll();
+	ui.leName->setFocus();
 }
 
 void MailCheckerDlg::onDel()
@@ -128,5 +137,5 @@ void MailCheckerDlg::onSelectAccount(const QModelIndex& idx)
 void MailCheckerDlg::onProtocolChanged(const QString& protocol)
 {
 	model->setData(model->index(currentRow, PROTOCOL), protocol);
-	ui.sbPort->setValue(protocol == "IMAP" ? 993 : 110);	
+	ui.sbPort->setValue(protocol == "IMAP" ? 993 : 110);
 }

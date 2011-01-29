@@ -50,8 +50,7 @@ TrayIcon::TrayIcon(QObject *parent)	: QSystemTrayIcon(parent)
 	onCheckAll();
 }
 
-void TrayIcon::onTrayActivated(QSystemTrayIcon::ActivationReason reason)
-{
+void TrayIcon::onTrayActivated(QSystemTrayIcon::ActivationReason reason) {
 	if(reason == QSystemTrayIcon::DoubleClick)
 		onOpenApp();
 }
