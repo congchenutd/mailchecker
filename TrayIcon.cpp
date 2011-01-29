@@ -12,6 +12,7 @@ TrayIcon::TrayIcon(QObject *parent)	: QSystemTrayIcon(parent)
 {
 	dlg = new MailCheckerDlg;
 	notification = new NotificationWindow;
+	connect(notification, SIGNAL(newMailCountChanged(int)), this, SLOT(onNewMailCountChanged(int)));
 
 	QMenu* trayMenu = new QMenu;
 
@@ -31,7 +32,7 @@ TrayIcon::TrayIcon(QObject *parent)	: QSystemTrayIcon(parent)
 	trayMenu->addAction(actionSettings);
 	trayMenu->addAction(actionExit);
 
-	setIcon(QIcon(":/MailChecker/Images/Mail.png"));
+	setHasNewMail(false);
 	setContextMenu(trayMenu);
 	show();
 
@@ -40,7 +41,8 @@ TrayIcon::TrayIcon(QObject *parent)	: QSystemTrayIcon(parent)
 	connect(actionExit,        SIGNAL(triggered()), qApp, SLOT(quit()));
 	connect(actionSettings,    SIGNAL(triggered()), dlg,  SLOT(show()));
 	connect(actionApplication, SIGNAL(triggered()), dlg,  SLOT(onOpenApp()));
-	connect(&timer,            SIGNAL(timeout()),   this, SLOT(onTimeout()));
+	connect(&timer,            SIGNAL(timeout()),   this, SLOT(onCheckAll()));
+	connect(&animationTimer,   SIGNAL(timeout()),   this, SLOT(onUpdateAnimation()));
 	connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
 			this, SLOT(onTrayActivated(QSystemTrayIcon::ActivationReason)));
 
@@ -101,7 +103,7 @@ void TrayIcon::alert()
 {
 	if(!notification->hasNewMail())
 	{
-		setIcon(QIcon(":/MailChecker/Images/Mail.png"));
+		setHasNewMail(false);
 		return;
 	}
 
@@ -112,13 +114,32 @@ void TrayIcon::alert()
 	if(UserSetting::getInstance()->value("Popup").toBool())
 		onTellMeAgain();
 
-	setIcon(QIcon(":/MailChecker/Images/NewMail.png"));
-}
-
-void TrayIcon::onTimeout() {
-	onCheckAll();
+	setHasNewMail(true);
 }
 
 void TrayIcon::onTellMeAgain() {
 	notification->showNofitication();
+}
+
+void TrayIcon::onNewMailCountChanged(int count) {
+	setHasNewMail(count > 0);
+}
+
+void TrayIcon::setHasNewMail(bool has)
+{
+	if(has)		
+		animationTimer.start(500);
+	else	
+	{
+		animationTimer.stop();
+		setIcon(QIcon(":/MailChecker/Images/Mail.png"));
+	}
+}
+
+void TrayIcon::onUpdateAnimation()
+{
+	static bool on = true;
+	setIcon(on ? QIcon(":/MailChecker/Images/NewMail.png") 
+			   : QIcon(":/MailChecker/Images/Mail.png"));
+	on = !on;
 }

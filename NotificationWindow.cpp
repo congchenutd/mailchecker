@@ -27,6 +27,7 @@ NotificationWindow::NotificationWindow(QWidget *parent)
 	setLayout(layout);
 
 	connect(&hideTimer, SIGNAL(timeout()), this, SLOT(onHide()));
+	showSeconds = UserSetting::getInstance()->value("ShowNotification").toInt();
 }
 
 void NotificationWindow::addAccountMails(const AccountMails& list)
@@ -39,7 +40,8 @@ void NotificationWindow::addAccountMails(const AccountMails& list)
 	foreach(MailInfo mail, list.mails)
 	{
 		MailWidget* mailWidget = new MailWidget(mail, frame);
-		connect(mailWidget, SIGNAL(mailDeleted(QWidget*)), this, SLOT(onAdjustGeometry(QWidget*)));
+		connect(mailWidget, SIGNAL(mailDeleted(QWidget*)),    this, SLOT(onAdjustGeometry(QWidget*)));
+		connect(mailWidget, SIGNAL(newMailCountChanged(int)), this, SIGNAL(newMailCountChanged(int)));
 		frame->addMailWidget(mailWidget);
 	}
 	addFrame(frame);
@@ -50,6 +52,7 @@ void NotificationWindow::clear()
 	foreach(QWidget* frame, frames)
 		delete frame;
 	frames.clear();
+	MailWidget::newMailCount = 0;
 }
 
 void NotificationWindow::showNofitication()
@@ -58,6 +61,7 @@ void NotificationWindow::showNofitication()
 		return;
 
 	show();
+	shrink();
 	setWindowOpacity(1.0);	
 
 	showGeometryAnimation->setDuration(500);
@@ -67,8 +71,7 @@ void NotificationWindow::showNofitication()
 	hideGeometryAnimation->stop();
 	hideOpacityAnimation->stop();
 
-	int seconds = UserSetting::getInstance()->value("ShowNotification").toInt();
-	hideTimer.start(seconds * 1000 + 500);
+	hideTimer.start(showSeconds * 1000 + 500);
 }
 
 void NotificationWindow::addFrame(AccountFrame* frame)
@@ -105,14 +108,19 @@ void NotificationWindow::mousePressEvent(QMouseEvent*)
 void NotificationWindow::enterEvent(QEvent*)
 {
 	if(hideGeometryAnimation->state() == QAbstractAnimation::Running && hasNewMail())
-		showNofitication();
+		showNofitication();      // move back
+	hideTimer.stop();            // do not hide until mouse leave
+}
+
+void NotificationWindow::leaveEvent(QEvent*) {
+	hideTimer.start(showSeconds * 1000);
 }
 
 void NotificationWindow::onAdjustGeometry(QWidget* widget)
 {
 	frames.removeAt(frames.indexOf(widget));  // has no effect if widget is not AccountFrame
 	layout->removeWidget(widget);             // same
-	resize(10, 10);                           // force window to shrink
+	shrink();
 	setGeometry(getFinalRect());              // move to bottom right
 	if(frames.isEmpty())
 		onHide();
@@ -131,4 +139,10 @@ QRect NotificationWindow::getStartRect() const
 	int y = hideGeometryAnimation->state() == QAbstractAnimation::Running ?
 			geometry().y() : desktopRect.height();
 	return QRect(desktopRect.width()-width(), y, width(), height());
+}
+
+void NotificationWindow::shrink()
+{
+	adjustSize();
+	resize(10, 10);
 }

@@ -20,12 +20,14 @@ public:
 private slots:
 	void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 	void onCheckAll();
-	void onTimeout();
 	void onTellMeAgain();
 	void onCheckDone();
+	void onNewMailCountChanged(int count);
+	void onUpdateAnimation();
 
 private:
 	void alert();
+	void setHasNewMail(bool has);
 
 private:
 	MailCheckerDlg* dlg;
@@ -35,6 +37,7 @@ private:
 	QAction* actionSettings;
 	QAction* actionExit;
 	QTimer timer;
+	QTimer animationTimer;
 	NotificationWindow* notification;
 	QSet<Connection*> threads;
 };

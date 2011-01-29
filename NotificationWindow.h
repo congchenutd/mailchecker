@@ -26,15 +26,20 @@ public:
 protected:
 	virtual void mousePressEvent(QMouseEvent*);
 	virtual void enterEvent     (QEvent*);
+	virtual void leaveEvent     (QEvent*);
 
 private slots:
 	void onHide();
 	void onAdjustGeometry(QWidget* widget);
 
+signals:
+	void newMailCountChanged(int);
+
 private:
 	void addFrame(AccountFrame* widget);
 	QRect getStartRect() const;
 	QRect getFinalRect() const;
+	void shrink();
 
 private:
 	Ui::NotificationWindow ui;
@@ -44,6 +49,7 @@ private:
 	QPropertyAnimation* hideGeometryAnimation;
 	QPropertyAnimation* hideOpacityAnimation;
 	QTimer hideTimer;
+	int showSeconds;
 };
 
 #endif // NOTIFICATIONWINDOW_H
