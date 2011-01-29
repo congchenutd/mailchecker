@@ -40,7 +40,7 @@ TrayIcon::TrayIcon(QObject *parent)	: QSystemTrayIcon(parent)
 	connect(actionTellMeAgain, SIGNAL(triggered()), this, SLOT(onTellMeAgain()));
 	connect(actionExit,        SIGNAL(triggered()), qApp, SLOT(quit()));
 	connect(actionSettings,    SIGNAL(triggered()), dlg,  SLOT(show()));
-	connect(actionApplication, SIGNAL(triggered()), dlg,  SLOT(onOpenApp()));
+	connect(actionApplication, SIGNAL(triggered()), this, SLOT(onOpenApp()));
 	connect(&timer,            SIGNAL(timeout()),   this, SLOT(onCheckAll()));
 	connect(&animationTimer,   SIGNAL(timeout()),   this, SLOT(onUpdateAnimation()));
 	connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
@@ -53,10 +53,13 @@ TrayIcon::TrayIcon(QObject *parent)	: QSystemTrayIcon(parent)
 void TrayIcon::onTrayActivated(QSystemTrayIcon::ActivationReason reason)
 {
 	if(reason == QSystemTrayIcon::DoubleClick)
-	{
-		QProcess* process = new QProcess;
-		process->start(tr("\"%1\"").arg(UserSetting::getInstance()->value("Application").toString()));
-	}
+		onOpenApp();
+}
+
+void TrayIcon::onOpenApp()
+{
+	QProcess* process = new QProcess;
+	process->start(tr("\"%1\"").arg(UserSetting::getInstance()->value("Application").toString()));
 }
 
 void TrayIcon::onCheckAll()

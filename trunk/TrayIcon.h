@@ -21,6 +21,7 @@ private slots:
 	void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 	void onCheckAll();
 	void onTellMeAgain();
+	void onOpenApp();
 	void onCheckDone();
 	void onNewMailCountChanged(int count);
 	void onUpdateAnimation();
