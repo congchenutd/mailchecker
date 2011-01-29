@@ -36,7 +36,7 @@ private:
 	QAction* actionExit;
 	QTimer timer;
 	NotificationWindow* notification;
-	QSet<Connection*> connections;
+	QSet<Connection*> threads;
 };
 
 #endif // TRAYICON_H

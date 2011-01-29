@@ -17,9 +17,6 @@ public:
 	MailCheckerDlg(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~MailCheckerDlg();
 
-public slots:
-	void onOpenApp();
-
 protected:
 	void closeEvent(QCloseEvent* event);
 

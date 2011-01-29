@@ -9,7 +9,7 @@
 
 class QVBoxLayout;
 class QPropertyAnimation;
-class MailWidget;
+class AccountFrame;
 
 class NotificationWindow : public QWidget
 {
@@ -21,26 +21,25 @@ public:
 	bool hasNewMail() const;
 	void clear();
 	void showNofitication();
-	void addMailList(const MailList& list);
+	void addAccountMails(const AccountMails& list);
 
 protected:
 	virtual void mousePressEvent(QMouseEvent*);
-	virtual void mouseMoveEvent (QMouseEvent*);
+	virtual void enterEvent     (QEvent*);
 
 private slots:
 	void onHide();
-	void onDelMail(MailWidget* widget);
+	void onAdjustGeometry(QWidget* widget);
 
 private:
-	void addWidget(QWidget* widget);
-	void addAccountLine(const QString& accountName);
+	void addFrame(AccountFrame* widget);
 	QRect getStartRect() const;
 	QRect getFinalRect() const;
 
 private:
 	Ui::NotificationWindow ui;
 	QVBoxLayout* layout;
-	QList<QWidget*> widgets;
+	QList<QWidget*> frames;
 	QPropertyAnimation* showGeometryAnimation;
 	QPropertyAnimation* hideGeometryAnimation;
 	QPropertyAnimation* hideOpacityAnimation;
