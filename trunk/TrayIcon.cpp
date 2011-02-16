@@ -80,11 +80,10 @@ void TrayIcon::onCheckAll()
 
 		if(account.enable)
 		{
-			Connection* connection = new Connection(this);
+			Connection* connection = new Connection(account, this);
 			threads << connection;
 			connect(connection, SIGNAL(finished()), this, SLOT(onCheckDone()));
 
-			connection->setAccount(account);
 			connection->setMission(Connection::CHECK);
 			connection->start();
 		}

@@ -40,20 +40,20 @@ struct AccountInfo
 	bool    enable;
 };
 
+class Logger;
 
 class Connection : public QThread
 {
 	Q_OBJECT
 
 public:
-	Connection(QObject* parent = 0);
+	Connection(const AccountInfo& account, QObject* parent = 0);
 
 	typedef enum {CHECK, DELETE, READ} Mission;
 	void run();
 	void setMission(Mission m) { mission = m; }
 	void setTargetID(int id)   { targetID = id; }
 	bool missionSuccessful() const { return successful; }
-	void setAccount(const AccountInfo& acc);
 	AccountMails getNewMails() const;
 
 protected:
@@ -79,6 +79,7 @@ protected:
 
 	void sendCommand(const QString& command);
 	void readResponse();
+	void setAccount(const AccountInfo& acc);
 
 protected:
 	int     timeout;
@@ -92,6 +93,7 @@ protected:
 	Mission mission;
 	int targetID;
 	bool successful;
+	Logger* logger;
 };
 
 #endif // CONNECTION_H
