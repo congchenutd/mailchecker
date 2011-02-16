@@ -39,11 +39,12 @@ int main(int argc, char *argv[])
 	if(!openDB("MailChecker.db"))
 		return 1;
 	createTables();
-	Logger::logger().setFileName("Log.txt");
-	Logger::logger() << "============= Program started ===============";
+//	Logger::logger() << "============= Program started ===============";
 
 	QApplication app(argc, argv);
 	app.setQuitOnLastWindowClosed(false);
 	TrayIcon tray;
-	return app.exec();
+	int ret = app.exec();
+	Logger::destroyLoggers();
+	return ret;
 }

@@ -22,8 +22,7 @@ void MailWidget::setMail(const MailInfo& info)
 
 void MailWidget::onSetRead()
 {
-	Connection* connection = new Connection(this);
-	connection->setAccount(getAccountInfo(mailInfo.accountName));
+	Connection* connection = new Connection(getAccountInfo(mailInfo.accountName), this);
 	connection->setMission(Connection::READ);
 	connection->setTargetID(mailInfo.id);
 	connection->start();
@@ -33,8 +32,7 @@ void MailWidget::onSetRead()
 
 void MailWidget::onDel()
 {
-	Connection* connection = new Connection;
-	connection->setAccount(getAccountInfo(mailInfo.accountName));
+	Connection* connection = new Connection(getAccountInfo(mailInfo.accountName), this);
 	connection->setMission(Connection::DELETE);
 	connection->setTargetID(mailInfo.id);
 	connection->start();

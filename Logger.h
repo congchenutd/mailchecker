@@ -12,6 +12,7 @@ class Logger : public QObject
 
 public:
 	static Logger& logger(const QString& fileName = "Log.txt");
+	static void destroyLoggers();
 	Logger& operator<< (const QString& str);
 
 private:
