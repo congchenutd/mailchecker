@@ -13,6 +13,7 @@ Logger::Logger(const QString& fileName, QObject* parent /*= 0*/)
 Logger& Logger::operator<<(const QString& str)
 {
 	stream << QDateTime::currentDateTime().toString() << ": " << str << "\r\n";
+	stream.flush();
 	return *this;
 }
 
