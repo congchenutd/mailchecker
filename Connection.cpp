@@ -1,12 +1,14 @@
 #include "Connection.h"
 #include "Setting.h"
+#include "Logger.h"
 #include <QStringList>
+#include <QDebug>
 
 Connection::Connection(QObject *parent)	: QThread(parent), socket(0)
 {
 	timeout = UserSetting::getInstance()->value("Timeout").toInt() * 1000;  // ms
 	socket = new QSslSocket(this);
-	qDebug() << "\nnew socket";
+	Logger::logger(account.accountName) << "New socket";
 
 	QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
 }
@@ -26,18 +28,18 @@ bool Connection::check()
 	if(!logout())
 		goto fail;
 
-	qDebug() << "\nLogout\n";
+	Logger::logger(account.accountName) << "Logout";
 	return true;
 
 fail:
-	qDebug() << "\nMission failed\n";
+	Logger::logger(account.accountName) << "Check failed";
 	return false;
 }
 
 bool Connection::connect()
 {
 	socket->connectToHostEncrypted(account.host, account.port);
-	qDebug() << "\nConnect to host";
+	Logger::logger(account.accountName) << "Connect to host";
 	readResponse();
 	return parseOK();
 }
@@ -160,10 +162,10 @@ void Connection::sendCommand(const QString& command)
 		return;
 	qint64 bytesWritten = socket->write(command.toUtf8() + "\r\n");
 	if(bytesWritten != command.size() + 2)
-		qDebug("Could not write all bytes");
+		Logger::logger(account.accountName) << "Could not write all bytes";
 	if(bytesWritten > 0 && !socket->waitForBytesWritten(timeout))
-		qDebug("Could not write bytes from buffer");
-	qDebug() << "\n ----------- Send ------------\n" << command;
+		Logger::logger(account.accountName) << "Could not write bytes from buffer";
+	Logger::logger(account.accountName) << "------------ Send ------------" << command;
 	readResponse();
 }
 
@@ -171,7 +173,7 @@ void Connection::readResponse()
 {
 	if(!socket->waitForReadyRead(timeout))
 	{
-		qDebug("Could not receive data:");
+		Logger::logger(account.accountName) << "Could not receive data";
 		return;
 	}
 	response.clear();
@@ -182,7 +184,7 @@ void Connection::readResponse()
 		{
 			if(!socket->waitForReadyRead(timeout))
 			{
-				qDebug("Could not receive data:");
+				Logger::logger(account.accountName) << "Could not receive data";
 				return;
 			}
 		}
@@ -190,7 +192,7 @@ void Connection::readResponse()
 			response += data;
 	}
 
-	qDebug() << "\n ------------- Response -------------\n" << response;
+	Logger::logger(account.accountName) << "------------- Response -------------" << response;
 }
 
 AccountMails Connection::getNewMails() const {
@@ -215,7 +217,7 @@ bool Connection::setRead(int id)
 		goto fail;
 
 fail:
-	qDebug() << "\nLogout\n";
+	Logger::logger(account.accountName) << "Logout";
 	return true;
 }
 
@@ -242,7 +244,7 @@ bool Connection::delMail(int id)
 		goto fail;
 
 fail:
-	qDebug() << "\nLogout\n";
+	Logger::logger(account.accountName) << "Logout";
 	return true;
 }
 

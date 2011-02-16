@@ -40,7 +40,6 @@ struct AccountInfo
 	bool    enable;
 };
 
-class QTcpSocket;
 
 class Connection : public QThread
 {
