@@ -1,8 +1,11 @@
 #include "TrayIcon.h"
+#include "Logger.h"
 #include <QtGui/QApplication>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QMessageBox>
+#include <QTextStream>
+#include <QFile>
 
 bool openDB(const QString& name)
 {
@@ -36,6 +39,8 @@ int main(int argc, char *argv[])
 	if(!openDB("MailChecker.db"))
 		return 1;
 	createTables();
+	Logger::logger().setFileName("Log.txt");
+	Logger::logger() << "============= Program started ===============";
 
 	QApplication app(argc, argv);
 	app.setQuitOnLastWindowClosed(false);
