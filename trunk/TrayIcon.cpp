@@ -96,6 +96,7 @@ void TrayIcon::onCheckDone()
 	if(connection->missionSuccessful())
 		notification->addAccountMails(connection->getNewMails());
 	threads.remove(connection);
+	delete connection;
 	if(threads.isEmpty())
 		alert();
 }
