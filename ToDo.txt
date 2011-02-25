@@ -1,0 +1,4 @@
++set read when delete
++use ini instead of db
++setting per user
++animation for checking
