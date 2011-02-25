@@ -2,3 +2,4 @@
 +use ini instead of db
 +setting per user
 +animation for checking
++click mail subject to open application
