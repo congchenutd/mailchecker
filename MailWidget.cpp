@@ -32,13 +32,13 @@ void MailWidget::onSetRead()
 
 void MailWidget::onDel()
 {
-	Connection* connection = new Connection(getAccountInfo(mailInfo.accountName), this);
+	Connection* connection = new Connection(getAccountInfo(mailInfo.accountName), 0);
 	connection->setMission(Connection::DELETE);
 	connection->setTargetID(mailInfo.id);
 	connection->start();
+	connect(connection, SIGNAL(finished()), connection, SLOT(deleteLater()));
 	emit mailDeleted(this);
 	emit newMailCountChanged(--newMailCount);
-	deleteLater();
 }
 
 QString MailWidget::getAccountName() const {
