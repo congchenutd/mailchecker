@@ -31,6 +31,7 @@ protected:
 private slots:
 	void onHide();
 	void onAdjustGeometry(QWidget* widget);
+	void onNewMailCountChanged(int count);
 
 signals:
 	void newMailCountChanged(int);
