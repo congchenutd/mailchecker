@@ -59,6 +59,7 @@ void TrayIcon::onOpenApp()
 {
 	QProcess* process = new QProcess;
 	process->start(tr("\"%1\"").arg(UserSetting::getInstance()->value("Application").toString()));
+	animationTimer.stop();
 }
 
 void TrayIcon::onCheckAll()
