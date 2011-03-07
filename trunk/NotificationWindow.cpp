@@ -41,7 +41,7 @@ void NotificationWindow::addAccountMails(const AccountMails& list)
 	{
 		MailWidget* mailWidget = new MailWidget(mail, frame);
 		connect(mailWidget, SIGNAL(mailDeleted(QWidget*)),    this, SLOT(onAdjustGeometry(QWidget*)));
-		connect(mailWidget, SIGNAL(newMailCountChanged(int)), this, SIGNAL(newMailCountChanged(int)));
+		connect(mailWidget, SIGNAL(newMailCountChanged(int)), this, SLOT(onNewMailCountChanged(int)));
 		frame->addMailWidget(mailWidget);
 	}
 	addFrame(frame);
@@ -145,4 +145,11 @@ void NotificationWindow::shrink()
 {
 	adjustSize();
 	resize(10, 10);
+}
+
+void NotificationWindow::onNewMailCountChanged(int count)
+{
+	emit newMailCountChanged(count);
+	if(count == 0)
+		onHide();
 }

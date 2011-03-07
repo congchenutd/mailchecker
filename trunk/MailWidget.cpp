@@ -4,7 +4,6 @@
 MailWidget::MailWidget(const MailInfo& info, QWidget *parent) : QWidget(parent)
 {
 	ui.setupUi(this);
-	connect(ui.btSetRead,    SIGNAL(clicked()), this, SLOT(onSetRead()));
 	connect(ui.btDel,        SIGNAL(clicked()), this, SLOT(onDel()));
 	connect(ui.labelSubject, SIGNAL(clicked()), this, SLOT(onSetRead()));
 

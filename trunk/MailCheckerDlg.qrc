@@ -15,7 +15,6 @@
     <file>Images/Exit.png</file>
     <file>Images/Mail.png</file>
     <file>Images/NewMail.png</file>
-    <file>Images/ReadMail.png</file>
     <file>Images/Settings.png</file>
   </qresource>
 </RCC>

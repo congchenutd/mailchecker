@@ -6,28 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>363</width>
-    <height>79</height>
+    <width>373</width>
+    <height>84</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MailWidget</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
+   <property name="margin">
     <number>5</number>
    </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
-   <property name="verticalSpacing">
-    <number>3</number>
+   <property name="spacing">
+    <number>5</number>
    </property>
    <item row="0" column="0">
     <widget class="QLabel" name="label">
@@ -125,14 +116,6 @@
    </item>
    <item row="0" column="2" rowspan="3">
     <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QPushButton" name="btSetRead">
-       <property name="icon">
-        <iconset resource="MailCheckerDlg.qrc">
-         <normaloff>:/MailChecker/Images/ReadMail.png</normaloff>:/MailChecker/Images/ReadMail.png</iconset>
-       </property>
-      </widget>
-     </item>
      <item>
       <widget class="QPushButton" name="btDel">
        <property name="icon">
