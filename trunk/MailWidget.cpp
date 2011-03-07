@@ -4,9 +4,9 @@
 MailWidget::MailWidget(const MailInfo& info, QWidget *parent) : QWidget(parent)
 {
 	ui.setupUi(this);
-	connect(ui.btSetRead, SIGNAL(clicked()), this, SLOT(onSetRead()));
-	connect(ui.btDel,     SIGNAL(clicked()), this, SLOT(onDel()));
-	connect(ui.labelSubject, SIGNAL(linkActivated()), this, SLOT(onSubjectClicked()));
+	connect(ui.btSetRead,    SIGNAL(clicked()), this, SLOT(onSetRead()));
+	connect(ui.btDel,        SIGNAL(clicked()), this, SLOT(onDel()));
+	connect(ui.labelSubject, SIGNAL(clicked()), this, SLOT(onSetRead()));
 
 	setMail(info);
 	newMailCount ++;
@@ -74,11 +74,6 @@ void MailWidget::setSubjectBold(bool bold)
 	QFont font;
 	font.setBold(bold);
 	ui.labelSubject->setFont(font);
-}
-
-void MailWidget::onSubjectClicked()
-{
-
 }
 
 int MailWidget::newMailCount = 0;
