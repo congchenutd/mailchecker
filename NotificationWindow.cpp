@@ -118,7 +118,7 @@ void NotificationWindow::leaveEvent(QEvent*) {
 
 void NotificationWindow::onAdjustGeometry(QWidget* widget)
 {
-	frames.removeAt(frames.indexOf(widget));  // has no effect if widget is not AccountFrame
+	frames.removeAt(frames.indexOf(widget));  // no effect if widget is not AccountFrame
 	layout->removeWidget(widget);             // same
 	shrink();
 	setGeometry(getFinalRect());              // move to bottom right

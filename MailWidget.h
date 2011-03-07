@@ -18,7 +18,6 @@ public:
 private slots:
 	void onSetRead();
 	void onDel();
-	void onSubjectClicked();
 
 private:
 	AccountInfo getAccountInfo(const QString& name) const;
